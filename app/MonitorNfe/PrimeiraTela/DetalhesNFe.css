@@ -1,0 +1,12 @@
+/* DetalhesNFe.css */
+.custom-tabs .ant-tabs-tab {
+    font-size: 12px; /* Diminui o tamanho da fonte das abas */
+    padding: 8px 16px; /* Ajusta o espaçamento das abas */
+    size: 5px;
+  }
+  
+  .custom-tabs .ant-tabs-nav {
+    margin-bottom: 10px; /* Ajusta a distância entre as abas e o conteúdo */
+    border-radius: 0;
+  }
+  

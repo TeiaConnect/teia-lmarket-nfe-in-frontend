@@ -1,0 +1,42 @@
+.nfe-table .ant-table-thead > tr > th,
+.nfe-table .ant-table-tbody > tr > td {
+  padding: 0px 5px; 
+  font-size: 12px;
+  text-align: left;
+  border-radius: 0;
+}
+
+.nfe-table .ant-table-thead > tr > th {
+  border-bottom: 1px solid #d9d9d9 !important; 
+}
+
+.nfe-table .ant-table-tbody > tr > td {
+  border-right: 1px solid #d9d9d9 !important;
+  border-bottom: 1px solid #d9d9d9 !important; 
+}
+
+.nfe-table .ant-table-tbody > tr:hover {
+  background: #f0f0f0; 
+}
+
+.nfe-table .ant-checkbox-inner {
+    border-radius: 0 !important; 
+    border: 1px solid #d9d9d9 !important; 
+    width: 14px !important; 
+    height: 14px !important;
+  }
+  
+  .nfe-table .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: #1890ff !important; 
+    border-color: #1890ff !important;
+  }
+  
+  .nfe-table .ant-checkbox-checked .ant-checkbox-inner::after {
+    border-radius: 0 !important; 
+  }
+
+  .nfe-table .chave-acesso {
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer; 
+  }
