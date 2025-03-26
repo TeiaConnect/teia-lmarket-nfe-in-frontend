@@ -1,11 +1,13 @@
 'use client';
 import React, {useState} from 'react';
 import Image from 'next/image'
-import { Breadcrumb, Layout, Menu, theme, MenuProps, Dropdown, Space } from 'antd';
+import { Breadcrumb, Layout, Menu, theme, MenuProps, Dropdown, Space, Typography } from 'antd';
 import { DownOutlined, HomeOutlined, SearchOutlined, SettingOutlined, UserOutlined, } from '@ant-design/icons';
 import GetJson from './getJson';
 import MonitorNFe from './MonitorNfe/PrimeiraTela/MonitorNFe';
+import MonitorNFeInbound from './MonitorNfe/PrimeiraTela/MonitorNFeInbound';
 const { Header, Content, Sider } = Layout;
+const { Text } = Typography;
 
 const icons = [
   { key: 'home', icon: HomeOutlined },
@@ -25,11 +27,12 @@ const items1:MenuProps['items'] = icons.map(({key, icon}) => ({
   icon: React.createElement(icon, {style:{color: 'white'}}),
 }))
 
-const LegendaSideBar: Array<string> = ['Administração','Configuração','NFe - Outbound'];
+const LegendaSideBar: Array<string> = ['Administração','Configuração','NFe - Outbound','NFe - Inbound'];
 const childrenConfig: { [key: string]: {count: number, titles: string[]} } = {
   'Administração': { count: 3, titles: ['Cadastro de usuário', 'Dashboard', 'Logs']},
   'Configuração': { count: 5, titles: ['Parâmetros de Empresa', 'Configuração de versão de XML', 'Configurações de Lote de  NFe', 'Intervalo de Numeração']},
-  'NFe - Outbound': { count: 6, titles: ['Monitor de Notas Fiscais', 'Monitor de Lotes de Notas Fiscais', 'Monitor de Eventos', 'Monitor de Lotes de Eventos', 'Monitor de Status de Serviço', 'Monitor de Link de Comunicação']}
+  'NFe - Outbound': { count: 6, titles: ['Monitor de Notas Fiscais', 'Monitor de Lotes de Notas Fiscais', 'Monitor de Eventos', 'Monitor de Lotes de Eventos', 'Monitor de Status de Serviço', 'Monitor de Link de Comunicação']},
+  'NFe - Inbound': { count: 6, titles: ['Monitor de Notas Fiscais', 'Monitor de Lotes de Notas Fiscais', 'Monitor de Eventos', 'Monitor de Lotes de Eventos', 'Monitor de Status de Serviço', 'Monitor de Link de Comunicação']},
 };
 
 const items2: MenuProps['items'] = LegendaSideBar.map(
@@ -66,6 +69,7 @@ const App: React.FC = () => {
 
     const componentMap: { [key:string]: React.ReactNode } = {
       '3-1': <MonitorNFe/>,
+      '4-1': <MonitorNFeInbound/>,
     }
 
     const componentText: { [key: string]: React.ReactNode } = {
@@ -81,7 +85,13 @@ const App: React.FC = () => {
       '3-3': 'Monitor de Eventos',
       '3-4': 'Monitor de Lotes de Eventos',
       '3-5': 'Monitor de Status de Serviço', 
-      '3-6': 'Monitor de Link de Comunicação', 
+      '3-6': 'Monitor de Link de Comunicação',
+      '4-1': 'Monitor de Notas Fiscais',
+      '4-2': 'Monitor de Lotes de Notas Fiscais',
+      '4-3': 'Monitor de Eventos',
+      '4-4': 'Monitor de Lotes de Eventos',
+      '4-5': 'Monitor de Status de Serviço',
+      '4-6': 'Monitor de Link de Comunicação',
     }
     
     setSelectedComponent(componentMap[e.key] || null);
@@ -103,9 +113,9 @@ const App: React.FC = () => {
           />
         </div>
           <div style={{flex: 1, display: 'flex', justifyContent: 'center', fontSize: '17px'}}>
-            <text style={{color: 'grey'}}>
+            <Text style={{color: 'grey'}}>
               {selectedText}
-            </text>
+            </Text>
           </div>
           <div>
             <Dropdown menu={{ items: menuItems}} overlayStyle={{borderRadius: 0}}>

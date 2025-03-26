@@ -1,12 +1,18 @@
+'use client';
+
 import React from 'react';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 
-const RootLayout = ({ children }: React.PropsWithChildren) => (
-  <html lang="en">
-    <body>
-      <AntdRegistry>{children}</AntdRegistry>
-    </body>
-  </html>
-);
-
-export default RootLayout;
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="pt-BR">
+      <body suppressHydrationWarning>
+        <AntdRegistry>{children}</AntdRegistry>
+      </body>
+    </html>
+  );
+}

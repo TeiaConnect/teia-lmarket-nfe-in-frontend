@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Button, Divider, Form, Input } from 'antd';
+import { Button, Divider, Form, Input, Typography, Select } from 'antd';
+
+const { Text } = Typography;
 
 const layout = {
   labelCol: { span: 8 },
@@ -24,7 +26,7 @@ const FiltroNFe: React.FC<FiltroNFeProps> = ({ onButtonClick }) => {
 
   return (
     <div>
-      <text style={{ fontSize: '20px' }}>Síntese</text>
+      <Text style={{ fontSize: '20px' }}>Síntese</Text>
       <Divider />
 
       <Form
@@ -37,7 +39,13 @@ const FiltroNFe: React.FC<FiltroNFeProps> = ({ onButtonClick }) => {
         size="small"
       >
         <Form.Item name="chaveAcesso" label="Chave de acesso:" style={{ marginBottom: 0 }}>
-          <Input style={{ fontSize: '12px', borderRadius: 0 }} />
+          <Select
+            mode="tags"
+            style={{ fontSize: '12px' }}
+            placeholder="Digite as chaves de acesso"
+            tokenSeparators={[',']}
+            allowClear
+          />
         </Form.Item>
         <Form.Item name="codigoStatusSefaz" label="Código status SEFAZ:" style={{ marginBottom: 0 }}>
           <Input style={{ fontSize: '12px', borderRadius: 0 }} />
