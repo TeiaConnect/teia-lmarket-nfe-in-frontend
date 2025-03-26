@@ -6,7 +6,7 @@ import TabelaNFeInbound from './TabelaNFeInbound';
 import DetalhesNFeInbound from './DetalhesNFeInbound';
 import UploadXML from './UploadXML';
 import { message, Button, Dropdown, Space, Cascader } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
+import { DownOutlined, FileTextOutlined, FileExcelOutlined, PrinterOutlined, ReloadOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, HistoryOutlined, SettingOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { NFeData } from '../types/NFeData';
 
@@ -284,39 +284,122 @@ const MonitorNFeInbound: React.FC = () => {
     <div className="monitor-nfe-container" style={{ transform: 'scale(0.9)', transformOrigin: 'top left' }}>
       <UploadXML onProcessXML={handleProcessXML} />
       <FiltroNFeInbound onButtonClick={handleFiltroSubmit} />
-      <div style={{ marginBottom: '15px' }}>
-        <Cascader options={options} onChange={(value) => console.log(value)} placeholder="Visão" style={{width: 70}}/>
-        <Dropdown menu={{ items: etapasProcessoItems }} >
-          <a onClick={(e) => e.preventDefault()}>
-            <Space style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
-              Etapas do Processo inbound
-              <DownOutlined />
-            </Space>
-          </a>
-        </Dropdown>
-        <Button style={{color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 0, marginLeft: 10}}>Selecionar Detalhes</Button>
-        <Button style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 0, marginLeft: 10 }}>Entrar DANFE</Button>
-        <Dropdown menu={{ items }} >
-          <a onClick={(e) => e.preventDefault()}>
-            <Space style={{ color: '#6e99cc',backgroundColor:'#F8F7FF' , marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
-              Outras Funções
-              <DownOutlined />
-            </Space>
-          </a>
-        </Dropdown>
-        <Button style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 0, marginLeft: 10 }}>Versão de impressão</Button>
-        <Dropdown menu={{ items: optionsExportacao }} >
-          <a onClick={(e) => e.preventDefault()}>
-            <Space style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
+      
+      <div style={{ 
+        marginBottom: '15px',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '8px',
+        alignItems: 'center',
+        padding: '10px',
+        backgroundColor: '#f5f5f5',
+        borderRadius: '4px'
+      }}>
+        {/* Grupo de Visão e Processo */}
+        <div style={buttonGroupStyle}>
+          <Cascader 
+            options={options} 
+            onChange={(value) => console.log(value)} 
+            placeholder="Visão" 
+            style={{width: 100}}
+          />
+          <Dropdown menu={{ items: etapasProcessoItems }}>
+            <Button icon={<SettingOutlined />} style={buttonStyle}>
+              Etapas do Processo
+            </Button>
+          </Dropdown>
+        </div>
+
+        {/* Grupo de Simulação e Contagem */}
+        <div style={buttonGroupStyle}>
+          <Button icon={<FileTextOutlined />} style={buttonStyle}>
+            Simular XML
+          </Button>
+          <Button icon={<FileExcelOutlined />} style={buttonStyle}>
+            Simular Fatura
+          </Button>
+          <Button icon={<ReloadOutlined />} style={buttonStyle}>
+            Entrar Contagem
+          </Button>
+        </div>
+
+        {/* Grupo de Registro e Visualização */}
+        <div style={buttonGroupStyle}>
+          <Button icon={<PrinterOutlined />} style={buttonStyle}>
+            Registrar MIGO/MIRO
+          </Button>
+          <Button icon={<EyeOutlined />} style={buttonStyle}>
+            Exibir XML
+          </Button>
+          <Button icon={<FileTextOutlined />} style={buttonStyle}>
+            Exibir DANFE
+          </Button>
+        </div>
+
+        {/* Grupo de Eventos e XML */}
+        <div style={buttonGroupStyle}>
+          <Button icon={<HistoryOutlined />} style={buttonStyle}>
+            Eventos
+          </Button>
+          <Button icon={<PlusOutlined />} style={buttonStyle}>
+            Incluir XML
+          </Button>
+          <Button icon={<DeleteOutlined />} style={buttonStyle}>
+            Excluir XML
+          </Button>
+        </div>
+
+        {/* Grupo de Processos */}
+        <div style={buttonGroupStyle}>
+          <Button style={buttonStyle}>
+            Redeterminar Processo
+          </Button>
+          <Dropdown menu={{ items }}>
+            <Button style={buttonStyle}>
+              Outros Processos
+            </Button>
+          </Dropdown>
+        </div>
+
+        {/* Grupo de Exportação */}
+        <div style={buttonGroupStyle}>
+          <Button style={buttonStyle}>
+            Versão de impressão
+          </Button>
+          <Dropdown menu={{ items: optionsExportacao }}>
+            <Button style={buttonStyle}>
               Exportação
-              <DownOutlined />
-            </Space>
-          </a>
-        </Dropdown>
+            </Button>
+          </Dropdown>
+        </div>
       </div>
+
       <TabelaNFeInbound jsonData={jsonData} onChaveAcessoClick={handleChaveAcessoClick} />
     </div>
   );
+};
+
+// Estilo comum para os botões
+const buttonStyle = {
+  color: '#6e99cc',
+  backgroundColor: '#F8F7FF',
+  borderColor: '#6e99cc',
+  borderRadius: 0,
+  margin: 0,
+  padding: '0 12px',
+  height: '32px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px'
+};
+
+// Estilo para os grupos de botões
+const buttonGroupStyle = {
+  display: 'flex',
+  gap: '0',
+  border: '1px solid #6e99cc',
+  borderRadius: '4px',
+  overflow: 'hidden'
 };
 
 export default MonitorNFeInbound; 
