@@ -369,7 +369,7 @@ const MonitorNFeInbound: React.FC = () => {
         jsonData={{
           notas_fiscais: jsonData?.notas_fiscais?.map(nota => ({
             ...nota,
-            dataHoraEmissao: nota.identificacao_nfe?.numero_nfe
+            dataHoraEmissao: nota.identificacao_nfe.data_hora_emissao
           })) || []
         }}
         onChaveAcessoClick={handleChaveAcessoClick}

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Upload, message } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
+import { NFeData } from '../types/NFeData';
 
 const { Dragger } = Upload;
 
 interface UploadXMLProps {
-  onProcessXML: (xmlData: any) => void;
+  onProcessXML: (xmlData: NFeData) => void;
 }
 
 export default function UploadXML({ onProcessXML }: UploadXMLProps) {
@@ -22,20 +23,33 @@ export default function UploadXML({ onProcessXML }: UploadXMLProps) {
         reader.readAsText(file);
       });
 
-      const response = await fetch('/api/nfe', {
+      const response = await fetch('/api/nfe/inbound', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ xml_content: xmlContent }),
+        body: JSON.stringify({ 
+          xml_content: xmlContent,
+          created_at: new Date().toISOString()
+        }),
       });
 
-      if (!response.ok) throw new Error('Erro ao processar XML');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao processar XML');
+      }
+
+      const result = await response.json();
       
-      message.success(`${file.name} processado com sucesso!`);
-      return true;
+      if (result.success) {
+        message.success(`${file.name} processado com sucesso!`);
+        return true;
+      } else {
+        throw new Error('Falha ao processar XML');
+      }
     } catch (error) {
-      message.error(`Erro ao processar ${file.name}`);
+      console.error('Erro detalhado:', error);
+      message.error(`Erro ao processar ${file.name}: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
       return false;
     }
   };
@@ -49,7 +63,7 @@ export default function UploadXML({ onProcessXML }: UploadXMLProps) {
         message.error(`${file.name} não é um arquivo XML`);
         return false;
       }
-      await processXMLFile(file);
+      const success = await processXMLFile(file);
       return false;
     },
     onChange(info) {

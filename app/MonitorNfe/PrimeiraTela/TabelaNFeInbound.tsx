@@ -27,12 +27,13 @@ interface TabelaNFeInboundProps {
   onChaveAcessoClick?: (chaveAcesso: number) => void;
   jsonData: {
     notas_fiscais: Array<{
-      dataHoraEmissao: any;
+      dataHoraEmissao: string;
       identificacao_nfe: {
         tipo_emissao: string;
         codigo_status: string;
         numero_nfe: string;
         serie: string;
+        data_hora_emissao: string;
       };
       emissor: {
         cnpj: string;
@@ -143,13 +144,13 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
           numeroNFe: nota.identificacao_nfe.numero_nfe,
           serie: nota.identificacao_nfe.serie,
           chaveAcesso: nota.referencia_nfe.chave_acesso,
-          dataHoraEmissao: nota.dataHoraEmissao,
+          dataHoraEmissao: nota.identificacao_nfe.data_hora_emissao || nota.dataHoraEmissao,
           processoInbound: 'NF-e para pedido normal',
-          cnpjEmissor: nota.emissor.cnpj || '',
-          cnpjDestinatario: nota.destinatario.cnpj || '',
-          codigoUfEmissor: nota.emissor.codigo_uf || '',
-          tipoEmissao: nota.identificacao_nfe.tipo_emissao || '',
-          ambiente: nota.ambiente || ''
+          cnpjEmissor: nota.emissor.cnpj,
+          cnpjDestinatario: nota.destinatario.cnpj,
+          codigoUfEmissor: nota.emissor.codigo_uf,
+          tipoEmissao: nota.identificacao_nfe.tipo_emissao,
+          ambiente: nota.ambiente
         };
         console.log('TabelaNFeInbound - Dados mapeados:', data);
         return data;
@@ -228,12 +229,13 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
       align: 'center',
     },
     {
-      title: 'CNPJ/CPF emissor',
+      title: 'CNPJ Emissor',
       dataIndex: 'cnpjEmissor',
-      width: 120,
-      render: (cnpjEmissor: string) => {
+      key: 'cnpjEmissor',
+      render: (cnpjEmissor: any) => {
         if (!cnpjEmissor) return '-';
-        const formattedCnpj = cnpjEmissor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        const cnpjString = String(cnpjEmissor);
+        const formattedCnpj = cnpjString.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
         return formattedCnpj;
       },
     },
@@ -241,9 +243,10 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
       title: 'CNPJ/CPF destinatário',
       dataIndex: 'cnpjDestinatario',
       width: 150,
-      render: (cnpjDestinatario: string) => {
+      render: (cnpjDestinatario: any) => {
         if (!cnpjDestinatario) return '-';
-        const formattedCnpj = cnpjDestinatario.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        const cnpjString = String(cnpjDestinatario);
+        const formattedCnpj = cnpjString.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
         return formattedCnpj;
       },
     },
