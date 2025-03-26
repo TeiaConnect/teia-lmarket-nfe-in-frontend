@@ -196,7 +196,6 @@ const App: React.FC = () => {
               background: "#ffffff",
             }}
           >
-            
             <GetJson></GetJson>
             {selectedComponent}
           </Content>

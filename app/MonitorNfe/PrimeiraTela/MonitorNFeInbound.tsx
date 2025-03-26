@@ -5,7 +5,9 @@ import FiltroNFeInbound from './FiltroNFeInbound';
 import TabelaNFeInbound from './TabelaNFeInbound';
 import DetalhesNFeInbound from './DetalhesNFeInbound';
 import UploadXML from './UploadXML';
-import { message } from 'antd';
+import { message, Button, Dropdown, Space, Cascader } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
+import type { MenuProps } from 'antd';
 
 interface NFeData {
   notas_fiscais: Array<{
@@ -43,6 +45,114 @@ interface NFeData {
   }>;
 }
 
+const options = [
+  {
+    value: 'visao1',
+    label: 'Visão 1',
+    children: [
+      {
+        value: 'visao1-1',
+        label: 'Visão 1.1',
+      },
+      {
+        value: 'visao1-2',
+        label: 'Visão 1.2',
+      },
+    ],
+  },
+  {
+    value: 'visao2',
+    label: 'Visão 2',
+    children: [
+      {
+        value: 'visao2-1',
+        label: 'Visão 2.1',
+      },
+      {
+        value: 'visao2-2',
+        label: 'Visão 2.2',
+      },
+    ],
+  },
+];
+
+const dropdownItems = [
+  {
+    key: '1',
+    label: 'Item 1',
+  },
+  {
+    key: '2',
+    label: 'Item 2',
+  },
+];
+
+const items: MenuProps['items'] = [
+  {
+    key: '1',
+    label: 'Continuar Processo',
+  },
+  {
+    key: '2',
+    label: 'Denfinir etapas do processo manualmente para Ok',
+  },
+  {
+    key: '3',
+    label: 'Finalizar NF-e Manualmente',
+  },
+  {
+    key: '4',
+    label: 'Rejeitar NF-e',
+  },
+  {
+    key: '5',
+    label: 'Anular Rejeição NF-e',
+  },
+  {
+    key: '6',
+    label: 'Enviar notificação ao Fornecedor',
+  },
+  {
+    key: '7',
+    label: 'Consultar Eventos',
+  },
+];
+
+const etapasProcessoItems = [
+  {
+    key: '1',
+    label: 'Atribuir itens do pedido',
+  },
+  {
+    key: '2',
+    label: 'Simular fatura e NF-e',
+  },
+  {
+    key: '3',
+    label: 'Entrada DANFE',
+  },
+  {
+    key: '4',
+    label: 'Verificar quantidade EM',
+  },
+];
+const optionsExportacao = [
+  {
+    key: '1',
+    label: 'Exportar para Excel',
+    function: 'exportarParaExcel',
+  },
+  {
+    key: '2',
+    label: 'Exportar para PDF',
+    function: 'exportarParaPDF',
+  },
+  {
+    key: '3',
+    label: 'Exportar Como...',
+    function: 'exportarComo',
+  },
+];
 const MonitorNFeInbound: React.FC = () => {
   const [jsonData, setJsonData] = useState<NFeData | null>(null);
   const [selectedChaveAcesso, setSelectedChaveAcesso] = useState<number | null>(null);
@@ -128,6 +238,36 @@ const MonitorNFeInbound: React.FC = () => {
     <div className="monitor-nfe-container">
       <UploadXML onProcessXML={handleProcessXML} />
       <FiltroNFeInbound onButtonClick={handleFiltroSubmit} />
+      <div style={{ marginBottom: '20px' }}>
+        <Cascader options={options} onChange={(value) => console.log(value)} placeholder="Visão" style={{width: 80}}/>
+        <Dropdown menu={{ items: etapasProcessoItems }} >
+          <a onClick={(e) => e.preventDefault()}>
+            <Space style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
+              Etapas do Processo inbound
+              <DownOutlined />
+            </Space>
+          </a>
+        </Dropdown>
+        <Button style={{color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 0, marginLeft: 10}}>Selecionar Detalhes</Button>
+        <Button style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 0, marginLeft: 10 }}>Entrar DANFE</Button>
+        <Dropdown menu={{ items }} >
+          <a onClick={(e) => e.preventDefault()}>
+            <Space style={{ color: '#6e99cc',backgroundColor:'#F8F7FF' , marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
+              Outras Funções
+              <DownOutlined />
+            </Space>
+          </a>
+        </Dropdown>
+        <Button style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 0, marginLeft: 10 }}>Versão de impressão</Button>
+        <Dropdown menu={{ items: optionsExportacao }} >
+          <a onClick={(e) => e.preventDefault()}>
+            <Space style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
+              Exportação
+              <DownOutlined />
+            </Space>
+          </a>
+        </Dropdown>
+      </div>
       <TabelaNFeInbound jsonData={jsonData} onChaveAcessoClick={handleChaveAcessoClick} />
     </div>
   );
