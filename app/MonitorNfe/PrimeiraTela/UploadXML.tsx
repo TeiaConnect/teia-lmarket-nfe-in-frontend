@@ -61,7 +61,7 @@ export default function UploadXML({ onProcessXML }: UploadXMLProps) {
   };
 
   return (
-    <div style={{ padding: '10px', maxWidth: '600px', margin: '0 auto' }}>
+    <div style={{ padding: '10px', maxWidth: '100vh', height: '20vh', margin: '0 auto' }}>
       <Dragger {...props}>
         <p className="ant-upload-drag-icon">
           <InboxOutlined />

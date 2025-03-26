@@ -4,3 +4,35 @@
   margin-bottom: 12px !important; 
   text-align: left;   
 }
+
+.trigger {
+  padding: 0 24px;
+  font-size: 18px;
+  line-height: 64px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger:hover {
+  color: #1890ff;
+}
+
+.ant-layout-sider {
+  transition: all 0.2s;
+}
+
+.ant-layout-sider-collapsed {
+  width: 80px;
+}
+
+.ant-layout-sider-collapsed .ant-menu-item {
+  padding: 0 24px;
+}
+
+.ant-layout-sider-collapsed .ant-menu-item .anticon {
+  margin-right: 0;
+}
+
+.ant-layout-sider-collapsed .ant-menu-item span {
+  display: none;
+}

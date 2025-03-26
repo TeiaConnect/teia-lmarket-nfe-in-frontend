@@ -2,10 +2,11 @@
 import React, {useState} from 'react';
 import Image from 'next/image'
 import { Breadcrumb, Layout, Menu, theme, MenuProps, Dropdown, Space, Typography } from 'antd';
-import { DownOutlined, HomeOutlined, SearchOutlined, SettingOutlined, UserOutlined, } from '@ant-design/icons';
+import { DownOutlined, HomeOutlined, SearchOutlined, SettingOutlined, UserOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import GetJson from './getJson';
 import MonitorNFe from './MonitorNfe/PrimeiraTela/MonitorNFe';
 import MonitorNFeInbound from './MonitorNfe/PrimeiraTela/MonitorNFeInbound';
+
 const { Header, Content, Sider } = Layout;
 const { Text } = Typography;
 
@@ -54,25 +55,23 @@ const items2: MenuProps['items'] = LegendaSideBar.map(
     };
   },
 );
-// fim layout
 
 const App: React.FC = () => {
   const {
     token: { colorBgContainer }, 
   } = theme.useToken();
 
-  const [selectedComponent, setSelectedComponent] = useState<React.ReactNode>(null);
-
-  const [selectedText, setSelectedText] = useState<React.ReactNode>('');
+  const [selectedComponent, setSelectedComponent] = useState<React.ReactNode>(<MonitorNFeInbound />);
+  const [selectedText, setSelectedText] = useState<string>("Monitor NFe Inbound");
+  const [collapsed, setCollapsed] = useState(false);
 
   const handleMenuClick: MenuProps['onClick'] = (e) => {
-
     const componentMap: { [key:string]: React.ReactNode } = {
       '3-1': <MonitorNFe/>,
       '4-1': <MonitorNFeInbound/>,
     }
 
-    const componentText: { [key: string]: React.ReactNode } = {
+    const componentText: { [key: string]: string } = {
       '1-1': 'Cadastro de Usuário',
       '1-2': 'Dashboard',
       '1-3': 'Logs',
@@ -94,17 +93,15 @@ const App: React.FC = () => {
       '4-6': 'Monitor de Link de Comunicação',
     }
     
-    setSelectedComponent(componentMap[e.key] || null);
-
-    setSelectedText(componentText[e.key] || '');
-
+    setSelectedComponent(componentMap[e.key] || <MonitorNFeInbound />);
+    setSelectedText(componentText[e.key] || 'Monitor NFe Inbound');
   }
 
   return (
     <Layout>
       <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 50}}>
         <div style={{display: 'flex', alignItems: 'center'}}>
-        <Image 
+          <Image 
             src="/logo_teia_2222.png" 
             alt="LogoTeia"
             width={80} 
@@ -112,13 +109,13 @@ const App: React.FC = () => {
             priority 
           />
         </div>
-          <div style={{flex: 1, display: 'flex', justifyContent: 'center', fontSize: '17px'}}>
-            <Text style={{color: 'grey'}}>
-              {selectedText}
-            </Text>
-          </div>
-          <div>
-            <Dropdown menu={{ items: menuItems}} overlayStyle={{borderRadius: 0}}>
+        <div style={{flex: 1, display: 'flex', justifyContent: 'center', fontSize: '17px'}}>
+          <Text style={{color: 'grey'}}>
+            {selectedText}
+          </Text>
+        </div>
+        <div>
+          <Dropdown menu={{ items: menuItems}} overlayStyle={{borderRadius: 0}}>
             <a onClick={(e) => e.preventDefault()}>
               <Space>
                 <UserOutlined style={{color: 'white'}}/>
@@ -129,7 +126,20 @@ const App: React.FC = () => {
         </div>
       </Header>
       <Layout>
-        <Sider width={200} style={{ background: colorBgContainer }}>
+        <Sider 
+          width={200} 
+          style={{ background: colorBgContainer }}
+          collapsible
+          collapsed={collapsed}
+          trigger={null}
+        >
+          <div style={{ padding: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+            {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
+              className: 'trigger',
+              onClick: () => setCollapsed(!collapsed),
+              style: { fontSize: '18px', cursor: 'pointer' }
+            })}
+          </div>
           <Menu
             mode="inline"
             defaultSelectedKeys={['1']}
