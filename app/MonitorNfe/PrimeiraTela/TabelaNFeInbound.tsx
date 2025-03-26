@@ -27,6 +27,7 @@ interface TabelaNFeInboundProps {
   onChaveAcessoClick?: (chaveAcesso: number) => void;
   jsonData: {
     notas_fiscais: Array<{
+      dataHoraEmissao: any;
       identificacao_nfe: {
         tipo_emissao: string;
         codigo_status: string;
@@ -142,12 +143,13 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
           numeroNFe: nota.identificacao_nfe.numero_nfe,
           serie: nota.identificacao_nfe.serie,
           chaveAcesso: nota.referencia_nfe.chave_acesso,
-          dataHoraEmissao: new Date().toLocaleString(),
-          processoInbound: 'Processado',
+          dataHoraEmissao: nota.dataHoraEmissao,
+          processoInbound: 'NF-e para pedido normal',
           cnpjEmissor: nota.emissor.cnpj || '',
           cnpjDestinatario: nota.destinatario.cnpj || '',
           codigoUfEmissor: nota.emissor.codigo_uf || '',
-          tipoEmissao: nota.identificacao_nfe.tipo_emissao || ''
+          tipoEmissao: nota.identificacao_nfe.tipo_emissao || '',
+          ambiente: nota.ambiente || ''
         };
         console.log('TabelaNFeInbound - Dados mapeados:', data);
         return data;
@@ -214,6 +216,10 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
       dataIndex: 'dataHoraEmissao',
       width: 180,
       align: 'center',
+      render: (dataHoraEmissao: string) => {
+        if (!dataHoraEmissao) return '-';
+        return dataHoraEmissao;
+      },
     },
     {
       title: 'Processo Inbound',

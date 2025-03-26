@@ -123,122 +123,114 @@ const MonitorNFeInbound: React.FC = () => {
   const [selectedChaveAcesso, setSelectedChaveAcesso] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleFiltroSubmit = async (filtros: any) => {
-    setLoading(true);
+  const handleFiltroSubmit = async (values: any) => {
     try {
+      setLoading(true);
+      console.log('Iniciando busca com valores:', values);
+      
       const params = new URLSearchParams();
-      
-      if (filtros.chaveAcesso?.length > 0) {
-        params.append('chNFe', filtros.chaveAcesso[0]);
-      }
-      
-      if (filtros.cnpjEmissorDe) {
-        params.append('cnpj_emissor', filtros.cnpjEmissorDe[0]);
-      }
+      if (values.chNFe) params.append('chNFe', values.chNFe);
+      if (values.cnpj_emissor) params.append('cnpj_emissor', values.cnpj_emissor);
+      if (values.data_inicio) params.append('data_inicio', values.data_inicio);
+      if (values.data_fim) params.append('data_fim', values.data_fim);
 
-      if (filtros.dataCriacaoDe && filtros.dataCriacaoAte) {
-        params.append('data_inicio', filtros.dataCriacaoDe.toISOString());
-        params.append('data_fim', filtros.dataCriacaoAte.toISOString());
-      }
-
+      console.log('Fazendo requisição para:', `/api/nfe/inbound?${params.toString()}`);
       const response = await fetch(`/api/nfe/inbound?${params.toString()}`);
-      if (!response.ok) throw new Error('Erro ao buscar dados');
-      
       const data = await response.json();
-      console.log('Dados recebidos do MongoDB:', data);
       
-      const notasFiscais = data.map((nfe: any) => {
-        console.log('Processando documento:', nfe);
-        console.log('Estrutura nfeProc:', nfe.nfeProc);
-        
-        // Extrair dados do XML
-        const nfeProc = nfe.nfeProc;
-        console.log('NFe:', nfeProc.NFe);
-        console.log('infNFe:', nfeProc.NFe?.infNFe);
-        
-        const ide = nfeProc.NFe?.infNFe?.ide;
-        const emit = nfeProc.NFe?.infNFe?.emit;
-        const dest = nfeProc.NFe?.infNFe?.dest;
-        const protNFe = nfeProc.protNFe?.infProt;
+      console.log('Dados brutos recebidos:', data);
+      
+      if (!Array.isArray(data)) {
+        console.error('Resposta não é um array:', data);
+        throw new Error('Formato de resposta inválido');
+      }
 
-        console.log('Dados extraídos:', { ide, emit, dest, protNFe });
+      const notasFiscais = data.map(doc => {
+        try {
+          const nfe = doc.nfeProc?.NFe?.infNFe;
+          const protNFe = doc.nfeProc?.protNFe?.infProt;
+          
+          if (!nfe || !protNFe) {
+            console.error('Documento inválido - campos obrigatórios ausentes:', doc);
+            return null;
+          }
 
-        return {
-          identificacao_nfe: {
-            tipo_emissao: ide.tpEmis || '',
-            codigo_status: protNFe.cStat || '',
-            numero_nfe: ide.nNF || '',
-            serie: ide.serie || ''
-          },
-          emissor: {
-            cnpj: emit.CNPJ || '',
-            codigo_uf: emit.enderEmit.UF || '',
-            status: protNFe.xMotivo || '',
-            ultima_atividade: nfe.created_at || '',
-            status_atividade: protNFe.cStat || '',
-            codigo_status: protNFe.cStat || '',
-            descricao_status: protNFe.xMotivo || '',
+          return {
+            identificacao_nfe: {
+              tipo_emissao: nfe.ide.tpEmis || '',
+              codigo_status: protNFe.cStat || '',
+              numero_nfe: nfe.ide.nNF || '',
+              serie: nfe.ide.serie || '',
+              data_hora_emissao: nfe.ide.dhEmi || ''
+            },
+            emissor: {
+              cnpj: nfe.emit.CNPJ || '',
+              codigo_uf: nfe.emit.enderEmit?.UF || '',
+              status: protNFe.xMotivo || '',
+              ultima_atividade: doc.created_at || '',
+              status_atividade: protNFe.cStat || '',
+              codigo_status: protNFe.cStat || '',
+              descricao_status: protNFe.xMotivo || '',
+              codigo_mensagem: protNFe.cStat || '',
+              mensagem_sefaz: protNFe.xMotivo || '',
+              inscricao_estadual: nfe.emit.IE || '',
+              nome_emissor: nfe.emit.xNome || '',
+              nome_empresa: nfe.emit.xNome || '',
+              nome_comercio: nfe.emit.xFant || '',
+              rua: nfe.emit.enderEmit?.xLgr || '',
+              complemento: nfe.emit.enderEmit?.xCpl || '',
+              bairro: nfe.emit.enderEmit?.xBairro || '',
+              numero: nfe.emit.enderEmit?.nro || '',
+              codigo_postal: nfe.emit.enderEmit?.CEP || '',
+              codigo_cidade: nfe.emit.enderEmit?.cMun || '',
+              nome_cidade: nfe.emit.enderEmit?.xMun || '',
+              uf: nfe.emit.enderEmit?.UF || '',
+              chave_pais: nfe.emit.enderEmit?.cPais || '',
+              nome_pais: nfe.emit.enderEmit?.xPais || '',
+              telefone: nfe.emit.enderEmit?.fone || '',
+              codigo_tributacao: nfe.emit.CRT || '',
+              inscricao_municipal: nfe.emit.IM || '',
+              codigo_atividade: nfe.emit.CNAE || ''
+            },
+            destinatario: {
+              cnpj: nfe.dest.CNPJ || ''
+            },
+            referencia_nfe: {
+              chave_acesso: protNFe.chNFe || ''
+            },
+            ambiente: protNFe.tpAmb || '',
             codigo_mensagem: protNFe.cStat || '',
             mensagem_sefaz: protNFe.xMotivo || '',
-            inscricao_estadual: emit.IE || '',
-            nome_emissor: emit.xNome || '',
-            nome_empresa: emit.xNome || '',
-            nome_comercio: emit.xFant || '',
-            rua: emit.enderEmit.xLgr || '',
-            complemento: emit.enderEmit.xCpl || '',
-            bairro: emit.enderEmit.xBairro || '',
-            numero: emit.enderEmit.nro || '',
-            codigo_postal: emit.enderEmit.CEP || '',
-            codigo_cidade: emit.enderEmit.cMun || '',
-            nome_cidade: emit.enderEmit.xMun || '',
-            uf: emit.enderEmit.UF || '',
-            chave_pais: emit.enderEmit.cPais || '',
-            nome_pais: emit.enderEmit.xPais || '',
-            telefone: emit.enderEmit.fone || '',
-            codigo_tributacao: emit.CRT || '',
-            inscricao_municipal: emit.IM || '',
-            codigo_atividade: emit.CNAE || ''
-          },
-          destinatario: {
-            cnpj: dest.CNPJ || ''
-          },
-          referencia_nfe: {
-            chave_acesso: protNFe.chNFe || ''
-          },
-          ambiente: protNFe.tpAmb || '',
-          codigo_mensagem: protNFe.cStat || '',
-          mensagem_sefaz: protNFe.xMotivo || '',
-          inscricao_estadual: emit.IE || '',
-          nome_emissor: emit.xNome || '',
-          nome_empresa: emit.xNome || '',
-          nome_comercio: emit.xFant || '',
-          rua: emit.enderEmit.xLgr || '',
-          complemento: emit.enderEmit.xCpl || '',
-          bairro: emit.enderEmit.xBairro || '',
-          numero: emit.enderEmit.nro || '',
-          codigo_postal: emit.enderEmit.CEP || '',
-          codigo_cidade: emit.enderEmit.cMun || '',
-          nome_cidade: emit.enderEmit.xMun || '',
-          uf: emit.enderEmit.UF || '',
-          chave_pais: emit.enderEmit.cPais || '',
-          nome_pais: emit.enderEmit.xPais || '',
-          telefone: emit.enderEmit.fone || '',
-          codigo_tributacao: emit.CRT || '',
-          inscricao_municipal: emit.IM || '',
-          codigo_atividade: emit.CNAE || '',
-          codigo_status: protNFe.cStat || '',
-          descricao_status: protNFe.xMotivo || '',
-          ultima_atividade: nfe.created_at || '',
-          status_atividade: protNFe.cStat || ''
-        };
-      });
-
-      console.log('Dados mapeados:', notasFiscais);
-      setJsonData({ notas_fiscais: notasFiscais });
-      
-      if (notasFiscais.length === 0) {
-        message.info('Nenhum resultado encontrado para os filtros aplicados.');
-      }
+            inscricao_estadual: nfe.emit.IE || '',
+            nome_emissor: nfe.emit.xNome || '',
+            nome_empresa: nfe.emit.xNome || '',
+            nome_comercio: nfe.emit.xFant || '',
+            rua: nfe.emit.enderEmit?.xLgr || '',
+            complemento: nfe.emit.enderEmit?.xCpl || '',
+            bairro: nfe.emit.enderEmit?.xBairro || '',
+            numero: nfe.emit.enderEmit?.nro || '',
+            codigo_postal: nfe.emit.enderEmit?.CEP || '',
+            codigo_cidade: nfe.emit.enderEmit?.cMun || '',
+            nome_cidade: nfe.emit.enderEmit?.xMun || '',
+            uf: nfe.emit.enderEmit?.UF || '',
+            chave_pais: nfe.emit.enderEmit?.cPais || '',
+            nome_pais: nfe.emit.enderEmit?.xPais || '',
+            telefone: nfe.emit.enderEmit?.fone || '',
+            codigo_tributacao: nfe.emit.CRT || '',
+            inscricao_municipal: nfe.emit.IM || '',
+            codigo_atividade: nfe.emit.CNAE || '',
+            codigo_status: protNFe.cStat || '',
+            descricao_status: protNFe.xMotivo || '',
+            ultima_atividade: doc.created_at || '',
+            status_atividade: protNFe.cStat || ''
+          };
+        } catch (error) {
+          console.error('Erro ao mapear documento:', error);
+          return null;
+        }
+      }).filter(Boolean);
+      console.log('Notas fiscais mapeadas:', notasFiscais);
+      setJsonData({ notas_fiscais: notasFiscais as any }); // Forçando o tipo any temporariamente
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
       message.error('Erro ao buscar dados. Por favor, tente novamente.');
@@ -373,8 +365,15 @@ const MonitorNFeInbound: React.FC = () => {
           </Dropdown>
         </div>
       </div>
-
-      <TabelaNFeInbound jsonData={jsonData} onChaveAcessoClick={handleChaveAcessoClick} />
+      <TabelaNFeInbound 
+        jsonData={{
+          notas_fiscais: jsonData?.notas_fiscais?.map(nota => ({
+            ...nota,
+            dataHoraEmissao: nota.identificacao_nfe?.numero_nfe
+          })) || []
+        }}
+        onChaveAcessoClick={handleChaveAcessoClick}
+      />
     </div>
   );
 };

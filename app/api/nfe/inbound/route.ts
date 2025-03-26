@@ -24,15 +24,15 @@ export async function GET(request: Request) {
     const query: any = {};
     
     if (chNFe) {
-      query.chaveAcesso = chNFe;
+      query['nfeProc.protNFe.infProt.chNFe'] = chNFe;
     }
     
     if (cnpjEmissor) {
-      query['dadosProcessados.emissor.cnpj'] = cnpjEmissor;
+      query['nfeProc.NFe.infNFe.emit.CNPJ'] = cnpjEmissor;
     }
     
     if (dataInicio && dataFim) {
-      query.dataCriacao = {
+      query.created_at = {
         $gte: new Date(dataInicio),
         $lte: new Date(dataFim)
       };
@@ -47,7 +47,6 @@ export async function GET(request: Request) {
       if (nfes.length > 0) {
         console.log('Estrutura do primeiro documento:', JSON.stringify(nfes[0], null, 2));
         console.log('Campos disponíveis:', Object.keys(nfes[0]));
-        console.log('Estrutura dadosProcessados:', JSON.stringify(nfes[0].dadosProcessados, null, 2));
       }
       
       return NextResponse.json(nfes);
