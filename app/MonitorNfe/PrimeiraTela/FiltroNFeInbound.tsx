@@ -9,16 +9,25 @@ const layout = {
 };
 
 interface FiltroNFeInboundProps {
-  onButtonClick?: (json: any) => void;
+  onButtonClick?: (filtros: any) => void;
 }
 
 const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) => {
   const [form] = Form.useForm();
-  const [formData, setFormData] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  const onFinish = (values: Record<string, any>) => {
-    console.log('Dados do formulário:', values);
-    setFormData(values);
+  const onFinish = async (values: Record<string, any>) => {
+    setLoading(true);
+    try {
+      await onButtonClick?.(values);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    form.resetFields();
+    onButtonClick?.({});
   };
 
   return (
@@ -201,22 +210,31 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
           </Space>
         </Form.Item>
 
-        <Form.Item label={null} style={{ marginTop: 10 }}>
-          <Button
-            type="primary"
-            htmlType="submit"
-            onClick={() => onButtonClick?.({formData})}
-            style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 4 }}
-          >
-            Filtrar
-          </Button>
-          <Button
-            type="default"
-            onClick={() => form.resetFields()}
-            style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 4, marginLeft: 10 }}
-          >
-            Reinicializar
-          </Button>
+        <Form.Item wrapperCol={{ offset: 8, span: 16 }} style={{ marginTop: 16 }}>
+          <Space>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              loading={loading}
+              style={{ 
+                backgroundColor: '#F8F7FF', 
+                color: '#6e99cc', 
+                borderColor: '#6e99cc' 
+              }}
+            >
+              Buscar
+            </Button>
+            <Button 
+              onClick={handleReset}
+              style={{ 
+                backgroundColor: '#F8F7FF', 
+                color: '#6e99cc', 
+                borderColor: '#6e99cc' 
+              }}
+            >
+              Reinicializar
+            </Button>
+          </Space>
         </Form.Item>
       </Form>
     </div>
