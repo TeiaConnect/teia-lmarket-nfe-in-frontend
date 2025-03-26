@@ -128,23 +128,31 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
   };
 
   useEffect(() => {
+    console.log('TabelaNFeInbound - jsonData recebido:', jsonData);
     if (jsonData?.notas_fiscais) {
-      const parsedData = jsonData.notas_fiscais.map((nota, index) => ({
-        key: index,
-        icon: getStatusIcon(Number(nota.identificacao_nfe.codigo_status)),
-        tipoNFe: nota.identificacao_nfe.tipo_emissao,
-        codigoStatus: Number(nota.identificacao_nfe.codigo_status),
-        numeroDocumento: nota.emissor.cnpj,
-        numeroNFe: nota.identificacao_nfe.numero_nfe,
-        serie: nota.identificacao_nfe.serie,
-        chaveAcesso: nota.referencia_nfe.chave_acesso,
-        dataHoraEmissao: new Date().toLocaleString(),
-        processoInbound: 'Processado',
-        cnpjEmissor: nota.emissor.cnpj || '',
-        cnpjDestinatario: nota.destinatario.cnpj || '',
-        codigoUfEmissor: nota.emissor.codigo_uf || '',
-        tipoEmissao: nota.identificacao_nfe.tipo_emissao || ''
-      }));
+      console.log('TabelaNFeInbound - Processando notas_fiscais:', jsonData.notas_fiscais);
+      const parsedData = jsonData.notas_fiscais.map((nota, index) => {
+        console.log('TabelaNFeInbound - Processando nota:', nota);
+        const data = {
+          key: index,
+          icon: getStatusIcon(Number(nota.identificacao_nfe.codigo_status)),
+          tipoNFe: nota.identificacao_nfe.tipo_emissao,
+          codigoStatus: Number(nota.identificacao_nfe.codigo_status),
+          numeroDocumento: nota.emissor.cnpj,
+          numeroNFe: nota.identificacao_nfe.numero_nfe,
+          serie: nota.identificacao_nfe.serie,
+          chaveAcesso: nota.referencia_nfe.chave_acesso,
+          dataHoraEmissao: new Date().toLocaleString(),
+          processoInbound: 'Processado',
+          cnpjEmissor: nota.emissor.cnpj || '',
+          cnpjDestinatario: nota.destinatario.cnpj || '',
+          codigoUfEmissor: nota.emissor.codigo_uf || '',
+          tipoEmissao: nota.identificacao_nfe.tipo_emissao || ''
+        };
+        console.log('TabelaNFeInbound - Dados mapeados:', data);
+        return data;
+      });
+      console.log('TabelaNFeInbound - Dados finais:', parsedData);
       setDataSource(parsedData);
     }
   }, [jsonData]);
@@ -249,6 +257,30 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
       width: 120,
       align: 'center',
       render: (tipoEmissao: string) => {
+        if (tipoEmissao == '1') {
+          return 'Normal'
+        }
+        if (tipoEmissao == '2') {
+          return 'Contingência'
+        }
+        if (tipoEmissao == '3') {
+          return 'ContingênciaSCAN'
+        }
+        if (tipoEmissao == '4') {
+          return 'ContingênciaDPEC'
+        }
+        if (tipoEmissao == '5') {
+          return 'ContingênciaFS'
+        }
+        if (tipoEmissao == '6') {
+          return 'ContingênciaSVCAN'
+        }
+        if (tipoEmissao == '7') {
+          return 'ContingênciaSVCRS'
+        }
+        if (tipoEmissao == '8') {
+          return 'ContingênciaOFFLINE'
+        }
         if (!tipoEmissao) return '-';
         return tipoEmissao;
       },

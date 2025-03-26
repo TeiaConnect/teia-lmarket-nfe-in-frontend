@@ -141,55 +141,99 @@ const MonitorNFeInbound: React.FC = () => {
         params.append('data_fim', filtros.dataCriacaoAte.toISOString());
       }
 
-      const response = await fetch(`/api/nfe?${params.toString()}`);
+      const response = await fetch(`/api/nfe/inbound?${params.toString()}`);
       if (!response.ok) throw new Error('Erro ao buscar dados');
       
       const data = await response.json();
+      console.log('Dados recebidos do MongoDB:', data);
       
-      const notasFiscais = data.map((xml: any) => ({
-        identificacao_nfe: {
-          tipo_emissao: xml.nfeProc?.NFe?.infNFe?.ide?.tpEmis || '',
-          codigo_status: xml.nfeProc?.protNFe?.infProt?.cStat || '',
-          numero_nfe: xml.nfeProc?.NFe?.infNFe?.ide?.nNF || '',
-          serie: xml.nfeProc?.NFe?.infNFe?.ide?.serie || ''
-        },
-        emissor: {
-          cnpj: xml.nfeProc?.NFe?.infNFe?.emit?.CNPJ || '',
-          codigo_uf: xml.nfeProc?.NFe?.infNFe?.emit?.UF || ''
-        },
-        destinatario: {
-          cnpj: xml.nfeProc?.NFe?.infNFe?.dest?.CNPJ || ''
-        },
-        referencia_nfe: {
-          chave_acesso: xml.nfeProc?.protNFe?.infProt?.chNFe || ''
-        },
-        ambiente: xml.nfeProc?.NFe?.infNFe?.ide?.tpAmb || '',
-        codigo_mensagem: xml.nfeProc?.NFe?.infNFe?.emit?.cMsg || '',
-        mensagem_sefaz: xml.nfeProc?.NFe?.infNFe?.emit?.xMsg || '',
-        inscricao_estadual: xml.nfeProc?.NFe?.infNFe?.emit?.IE || '',
-        nome_emissor: xml.nfeProc?.NFe?.infNFe?.emit?.xNome || '',
-        nome_empresa: xml.nfeProc?.NFe?.infNFe?.emit?.xFant || '',
-        nome_comercio: xml.nfeProc?.NFe?.infNFe?.emit?.xFant || '',
-        rua: xml.nfeProc?.NFe?.infNFe?.emit?.xLgr || '',
-        complemento: xml.nfeProc?.NFe?.infNFe?.emit?.xBairro || '',
-        bairro: xml.nfeProc?.NFe?.infNFe?.emit?.xBairro || '',
-        numero: xml.nfeProc?.NFe?.infNFe?.emit?.nro || '',
-        codigo_postal: xml.nfeProc?.NFe?.infNFe?.emit?.CEP || '',
-        codigo_cidade: xml.nfeProc?.NFe?.infNFe?.emit?.cMun || '',
-        nome_cidade: xml.nfeProc?.NFe?.infNFe?.emit?.xMun || '',
-        uf: xml.nfeProc?.NFe?.infNFe?.emit?.UF || '',
-        chave_pais: xml.nfeProc?.NFe?.infNFe?.emit?.cPais || '',
-        nome_pais: xml.nfeProc?.NFe?.infNFe?.emit?.xPais || '',
-        telefone: xml.nfeProc?.NFe?.infNFe?.emit?.fone || '',
-        codigo_tributacao: xml.nfeProc?.NFe?.infNFe?.emit?.idEstrangeiro || '',
-        inscricao_municipal: xml.nfeProc?.NFe?.infNFe?.emit?.IM || '',
-        codigo_atividade: xml.nfeProc?.NFe?.infNFe?.emit?.códigoAtividade || '',
-        codigo_status: xml.nfeProc?.protNFe?.infProt?.cStat || '',
-        descricao_status: xml.nfeProc?.protNFe?.infProt?.xMotivo || '',
-        ultima_atividade: xml.nfeProc?.NFe?.infNFe?.emit?.ultimaAtividade || '',
-        status_atividade: xml.nfeProc?.NFe?.infNFe?.emit?.statusAtividade || ''
-      }));
+      const notasFiscais = data.map((nfe: any) => {
+        console.log('Processando documento:', nfe);
+        console.log('Estrutura nfeProc:', nfe.nfeProc);
+        
+        // Extrair dados do XML
+        const nfeProc = nfe.nfeProc;
+        console.log('NFe:', nfeProc.NFe);
+        console.log('infNFe:', nfeProc.NFe?.infNFe);
+        
+        const ide = nfeProc.NFe?.infNFe?.ide;
+        const emit = nfeProc.NFe?.infNFe?.emit;
+        const dest = nfeProc.NFe?.infNFe?.dest;
+        const protNFe = nfeProc.protNFe?.infProt;
 
+        console.log('Dados extraídos:', { ide, emit, dest, protNFe });
+
+        return {
+          identificacao_nfe: {
+            tipo_emissao: ide.tpEmis || '',
+            codigo_status: protNFe.cStat || '',
+            numero_nfe: ide.nNF || '',
+            serie: ide.serie || ''
+          },
+          emissor: {
+            cnpj: emit.CNPJ || '',
+            codigo_uf: emit.enderEmit.UF || '',
+            status: protNFe.xMotivo || '',
+            ultima_atividade: nfe.created_at || '',
+            status_atividade: protNFe.cStat || '',
+            codigo_status: protNFe.cStat || '',
+            descricao_status: protNFe.xMotivo || '',
+            codigo_mensagem: protNFe.cStat || '',
+            mensagem_sefaz: protNFe.xMotivo || '',
+            inscricao_estadual: emit.IE || '',
+            nome_emissor: emit.xNome || '',
+            nome_empresa: emit.xNome || '',
+            nome_comercio: emit.xFant || '',
+            rua: emit.enderEmit.xLgr || '',
+            complemento: emit.enderEmit.xCpl || '',
+            bairro: emit.enderEmit.xBairro || '',
+            numero: emit.enderEmit.nro || '',
+            codigo_postal: emit.enderEmit.CEP || '',
+            codigo_cidade: emit.enderEmit.cMun || '',
+            nome_cidade: emit.enderEmit.xMun || '',
+            uf: emit.enderEmit.UF || '',
+            chave_pais: emit.enderEmit.cPais || '',
+            nome_pais: emit.enderEmit.xPais || '',
+            telefone: emit.enderEmit.fone || '',
+            codigo_tributacao: emit.CRT || '',
+            inscricao_municipal: emit.IM || '',
+            codigo_atividade: emit.CNAE || ''
+          },
+          destinatario: {
+            cnpj: dest.CNPJ || ''
+          },
+          referencia_nfe: {
+            chave_acesso: protNFe.chNFe || ''
+          },
+          ambiente: protNFe.tpAmb || '',
+          codigo_mensagem: protNFe.cStat || '',
+          mensagem_sefaz: protNFe.xMotivo || '',
+          inscricao_estadual: emit.IE || '',
+          nome_emissor: emit.xNome || '',
+          nome_empresa: emit.xNome || '',
+          nome_comercio: emit.xFant || '',
+          rua: emit.enderEmit.xLgr || '',
+          complemento: emit.enderEmit.xCpl || '',
+          bairro: emit.enderEmit.xBairro || '',
+          numero: emit.enderEmit.nro || '',
+          codigo_postal: emit.enderEmit.CEP || '',
+          codigo_cidade: emit.enderEmit.cMun || '',
+          nome_cidade: emit.enderEmit.xMun || '',
+          uf: emit.enderEmit.UF || '',
+          chave_pais: emit.enderEmit.cPais || '',
+          nome_pais: emit.enderEmit.xPais || '',
+          telefone: emit.enderEmit.fone || '',
+          codigo_tributacao: emit.CRT || '',
+          inscricao_municipal: emit.IM || '',
+          codigo_atividade: emit.CNAE || '',
+          codigo_status: protNFe.cStat || '',
+          descricao_status: protNFe.xMotivo || '',
+          ultima_atividade: nfe.created_at || '',
+          status_atividade: protNFe.cStat || ''
+        };
+      });
+
+      console.log('Dados mapeados:', notasFiscais);
       setJsonData({ notas_fiscais: notasFiscais });
       
       if (notasFiscais.length === 0) {
