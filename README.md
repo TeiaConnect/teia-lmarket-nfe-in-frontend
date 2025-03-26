@@ -1,4 +1,12 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Teia LMarket NFe Inbound - Frontend
+
+Frontend do sistema de NFe Inbound para o Teia LMarket. Este sistema é responsável por:
+
+- Upload e processamento de XMLs de NFe
+- Monitoramento de notas fiscais
+- Filtros e busca avançada
+- Visualização detalhada de NFes
+- Integração com MongoDB para armazenamento
 
 ## Getting Started
 
