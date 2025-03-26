@@ -47,15 +47,19 @@ const onChange: CascaderProps<Option>['onChange'] = (value) => {
 const items: MenuProps['items'] = [
   {
     key: '1',
-    label: 'Primeira opção',
+    label: 'Atribuir itens do pedido',
   },
   {
     key: '2',
-    label: 'Segunda opção',
+    label: 'Simular fatura e NF-e',
   },
   {
     key: '3',
-    label: 'Terceira opção',
+    label: 'Entrada DANFE',
+  },
+  {
+    key: '4',
+    label: 'Verificar quantidade EM',
   },
 ];
 
@@ -138,7 +142,7 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
       <Dropdown menu={{ items }} >
         <a onClick={(e) => e.preventDefault()}>
           <Space style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
-            Seleção detalhes
+            Etapas do Processo inbound
             <DownOutlined />
           </Space>
         </a>

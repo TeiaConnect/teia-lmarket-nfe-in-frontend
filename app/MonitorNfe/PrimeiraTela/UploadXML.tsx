@@ -5,7 +5,11 @@ import type { UploadProps } from 'antd';
 
 const { Dragger } = Upload;
 
-export default function UploadXML() {
+interface UploadXMLProps {
+  onProcessXML: (xmlData: any) => void;
+}
+
+export default function UploadXML({ onProcessXML }: UploadXMLProps) {
   const [fileList, setFileList] = useState<any[]>([]);
 
   const processXMLFile = async (file: File): Promise<boolean> => {

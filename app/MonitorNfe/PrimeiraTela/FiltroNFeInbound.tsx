@@ -192,7 +192,7 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
             <Form.Item name="dataCriacaoDe" noStyle>
               <DatePicker placeholder="Data Início" style={{ fontSize: '12px', borderRadius: 4, marginTop: 0, height: 26 }} />
             </Form.Item>
-            <Divider type="vertical" style={{ height: '100%', width: 49 }} />
+            <Divider type="vertical" style={{ height: '100%', width: 54 }} />
             <Form.Item label="até:" name="dataCriacaoAte" style={{ marginBottom: 0 }} >
               <DatePicker placeholder="Data Fim" style={{ fontSize: '12px', borderRadius: 4, marginTop: 0, height: 26 }} />
             </Form.Item>
@@ -203,7 +203,7 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
             <Form.Item name="horaCriacaoDe" noStyle>
               <Input style={{ fontSize: '12px', borderRadius: 4, height: 26, width: 100 }} /> 
             </Form.Item>
-            <Divider type="vertical" style={{ height: '100%', width: 88 }} />
+            <Divider type="vertical" style={{ height: '100%', width: 94 }} />
             <Form.Item label="até:" name="horaCriacaoAte" style={{ marginBottom: 0 }} >
               <Input style={{ fontSize: '12px', borderRadius: 4, height: 26, width: 100 }} />
             </Form.Item>
