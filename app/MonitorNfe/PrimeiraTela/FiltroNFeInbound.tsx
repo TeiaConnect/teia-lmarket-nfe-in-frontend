@@ -40,14 +40,14 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
         form={form}
         name="nest-messages"
         onFinish={onFinish}
-        style={{ maxWidth: 600 }}
+        style={{ maxWidth: 500 }}
         labelAlign="right"
         size="small"
       >
-        <Form.Item name="chaveAcesso" label="Chave de acesso:" style={{ marginBottom: 3 }}>
+        <Form.Item name="chaveAcesso" label="Chave de acesso:" style={{ marginBottom: 2 }}>
           <Select
             mode="tags"
-            style={{ fontSize: '12px' }}
+            style={{ fontSize: '11px' }}
             placeholder="Digite as chaves de acesso"
             tokenSeparators={[',']}
             allowClear

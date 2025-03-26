@@ -18,6 +18,9 @@ interface DataType {
   dataHoraEmissao: string;
   processoInbound: string;
   cnpjEmissor: string;
+  cnpjDestinatario: string;
+  codigoUfEmissor: string;
+  tipoEmissao: string;
 }
 
 interface TabelaNFeInboundProps {
@@ -32,10 +35,39 @@ interface TabelaNFeInboundProps {
       };
       emissor: {
         cnpj: string;
+        codigo_uf: string;
+      };
+      destinatario: {
+        cnpj: string;
       };
       referencia_nfe: {
         chave_acesso: string;
       };
+      ambiente: string;
+      codigo_mensagem: string;
+      mensagem_sefaz: string;
+      inscricao_estadual: string;
+      nome_emissor: string;
+      nome_empresa: string;
+      nome_comercio: string;
+      rua: string;
+      complemento: string;
+      bairro: string;
+      numero: string;
+      codigo_postal: string;
+      codigo_cidade: string;
+      nome_cidade: string;
+      uf: string;
+      chave_pais: string;
+      nome_pais: string;
+      telefone: string;
+      codigo_tributacao: string;
+      inscricao_municipal: string;
+      codigo_atividade: string;
+      codigo_status: string;
+      descricao_status: string;
+      ultima_atividade: string;
+      status_atividade: string;      
     }>;
   } | null;
 }
@@ -108,7 +140,10 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
         chaveAcesso: nota.referencia_nfe.chave_acesso,
         dataHoraEmissao: new Date().toLocaleString(),
         processoInbound: 'Processado',
-        cnpjEmissor: nota.emissor.cnpj
+        cnpjEmissor: nota.emissor.cnpj || '',
+        cnpjDestinatario: nota.destinatario.cnpj || '',
+        codigoUfEmissor: nota.emissor.codigo_uf || '',
+        tipoEmissao: nota.identificacao_nfe.tipo_emissao || ''
       }));
       setDataSource(parsedData);
     }
@@ -128,29 +163,34 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
     {
       title: 'Status',
       dataIndex: 'icon',
-      width: 60,
+      width: 50,
+      align: 'center',
       fixed: 'left',
       render: (icon) => icon,
     },
     {
       title: 'Tipo NF-e',
       dataIndex: 'tipoNFe',
-      width: 100,
+      width: 80,
+      align: 'center',
     },
     {
       title: 'Nº NF-e',
       dataIndex: 'numeroNFe',
       width: 100,
+      align: 'center',
     },
     {
       title: 'Série',
       dataIndex: 'serie',
-      width: 80,
+      width: 50,
+      align: 'center',
     },
     {
       title: 'Chave de acesso',
       dataIndex: 'chaveAcesso',
       width: 300,
+      align: 'center',
       render: (chaveAcesso) => (
         <span 
           className="chave-acesso" 
@@ -165,11 +205,13 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
       title: 'Data/hora de emissão',
       dataIndex: 'dataHoraEmissao',
       width: 180,
+      align: 'center',
     },
     {
       title: 'Processo Inbound',
       dataIndex: 'processoInbound',
-      width: 120,
+      width: 130,
+      align: 'center',
     },
     {
       title: 'CNPJ/CPF emissor',
@@ -181,6 +223,47 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
         return formattedCnpj;
       },
     },
+    {
+      title: 'CNPJ/CPF destinatário',
+      dataIndex: 'cnpjDestinatario',
+      width: 150,
+      render: (cnpjDestinatario: string) => {
+        if (!cnpjDestinatario) return '-';
+        const formattedCnpj = cnpjDestinatario.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        return formattedCnpj;
+      },
+    },
+    {
+      title: 'Codigo UF Emissor',
+      dataIndex: 'codigoUfEmissor',
+      align: 'center',
+      width: 130,
+      render: (codigoUfEmissor: string) => {
+        if (!codigoUfEmissor) return '-';
+        return codigoUfEmissor;
+      },
+    },
+    {
+      title: 'Tipo de Emissão',
+      dataIndex: 'tipoEmissao',
+      width: 120,
+      align: 'center',
+      render: (tipoEmissao: string) => {
+        if (!tipoEmissao) return '-';
+        return tipoEmissao;
+      },
+    },
+    {
+      title: 'Ambiente SEFAZ',
+      dataIndex: 'ambiente',
+      width: 120,
+      align: 'center',
+      render: (ambiente: string) => {
+        if (!ambiente) return '-';
+        return ambiente;
+      },
+    },
+    
   ];
 
   return (
@@ -189,19 +272,30 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
       backgroundColor: '#fff',
       borderRadius: '8px',
       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      overflow: 'auto'
+      overflow: 'auto',
+      width: '100%',
+      height: '100%'
     }}>
       <Table
         rowSelection={rowSelection}
         columns={columns}
         dataSource={dataSource}
-        size="middle"
+        size="small"
         pagination={{
           pageSize: 10,
           showSizeChanger: true,
           showTotal: (total) => `Total ${total} itens`,
         }}
-        scroll={{ x: 1300 }}
+        scroll={{ x: 'max-content', y: '60vh' }}
+        style={{ 
+          fontSize: '10px', 
+          width: '100%', 
+          height: '100%', 
+          overflow: 'auto',
+          lineHeight: '1',
+          whiteSpace: 'nowrap'
+        }}
+        className="compact-table"
       />
     </div>
   );

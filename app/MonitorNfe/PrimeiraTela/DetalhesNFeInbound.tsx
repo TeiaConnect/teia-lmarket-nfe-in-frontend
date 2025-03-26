@@ -4,6 +4,7 @@ import { LeftOutlined } from '@ant-design/icons';
 import './DetalhesNFe.css';
 import Emissor from '../SegundaTela/TabEmissor/Emissor';
 import TabIdentificacaoNFe from '../SegundaTela/TabIdentificacaoNFe/TabIdentificacaoNFe';
+import { NFeData } from '../types/NFeData';
 
 const { Text } = Typography;
 
@@ -11,46 +12,14 @@ const onChange = (key: string) => {
   console.log(key);
 };
 
-interface NFeData {
-  notas_fiscais: Array<{
-    referencia_nfe: {
-      chave_acesso: string;
-    };
-    emissor: {
-      cnpj: string;
-      status: string;
-      ultima_atividade: string;
-      status_atividade: string;
-      codigo_status: string;
-      descricao_status: string;
-      codigo_mensagem: string;
-      mensagem_sefaz: string;
-      inscricao_estadual: string;
-      nome_emissor: string;
-      nome_empresa: string;
-      nome_comercio: string;
-      rua: string;
-      complemento: string;
-      bairro: string;
-      numero: string;
-      codigo_postal: string;
-      codigo_cidade: string;
-      nome_cidade: string;
-      uf: string;
-      chave_pais: string;
-      nome_pais: string;
-      telefone: string;
-      codigo_tributacao: string;
-      inscricao_municipal: string;
-      codigo_atividade: string;
-    };
-  }>;
-}
-
 interface DetalhesNFeInboundProps {
   chaveAcesso: number;
   onVoltar: () => void;
   jsonData: NFeData | null;
+  jsonDataDestinatario: NFeData | null;
+  jsonDataEmissor: NFeData | null;
+  jsonDataEventos: NFeData | null;
+  jsonDataItens: NFeData | null;
 }
 
 const tabNames = [
@@ -66,7 +35,8 @@ const tabNames = [
   "Responsável Técnico"
 ];
 
-const DetalhesNFeInbound: React.FC<DetalhesNFeInboundProps> = ({ chaveAcesso, onVoltar, jsonData }) => {
+const DetalhesNFeInbound: React.FC<DetalhesNFeInboundProps> = ({ chaveAcesso, onVoltar, jsonData, jsonDataDestinatario, jsonDataEmissor, jsonDataEventos, jsonDataItens }) => {
+
   // Verifica se jsonData e notas_fiscais existem
   if (!jsonData || !jsonData.notas_fiscais) {
     return <div>Nenhum dado disponível.</div>;

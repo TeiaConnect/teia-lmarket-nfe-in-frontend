@@ -8,42 +8,7 @@ import UploadXML from './UploadXML';
 import { message, Button, Dropdown, Space, Cascader } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-
-interface NFeData {
-  notas_fiscais: Array<{
-    referencia_nfe: {
-      chave_acesso: string;
-    };
-    emissor: {
-      cnpj: string;
-      status: string;
-      ultima_atividade: string;
-      status_atividade: string;
-      codigo_status: string;
-      descricao_status: string;
-      codigo_mensagem: string;
-      mensagem_sefaz: string;
-      inscricao_estadual: string;
-      nome_emissor: string;
-      nome_empresa: string;
-      nome_comercio: string;
-      rua: string;
-      complemento: string;
-      bairro: string;
-      numero: string;
-      codigo_postal: string;
-      codigo_cidade: string;
-      nome_cidade: string;
-      uf: string;
-      chave_pais: string;
-      nome_pais: string;
-      telefone: string;
-      codigo_tributacao: string;
-      inscricao_municipal: string;
-      codigo_atividade: string;
-    };
-  }>;
-}
+import { NFeData } from '../types/NFeData';
 
 const options = [
   {
@@ -189,11 +154,40 @@ const MonitorNFeInbound: React.FC = () => {
           serie: xml.nfeProc?.NFe?.infNFe?.ide?.serie || ''
         },
         emissor: {
-          cnpj: xml.nfeProc?.NFe?.infNFe?.emit?.CNPJ || ''
+          cnpj: xml.nfeProc?.NFe?.infNFe?.emit?.CNPJ || '',
+          codigo_uf: xml.nfeProc?.NFe?.infNFe?.emit?.UF || ''
+        },
+        destinatario: {
+          cnpj: xml.nfeProc?.NFe?.infNFe?.dest?.CNPJ || ''
         },
         referencia_nfe: {
           chave_acesso: xml.nfeProc?.protNFe?.infProt?.chNFe || ''
-        }
+        },
+        ambiente: xml.nfeProc?.NFe?.infNFe?.ide?.tpAmb || '',
+        codigo_mensagem: xml.nfeProc?.NFe?.infNFe?.emit?.cMsg || '',
+        mensagem_sefaz: xml.nfeProc?.NFe?.infNFe?.emit?.xMsg || '',
+        inscricao_estadual: xml.nfeProc?.NFe?.infNFe?.emit?.IE || '',
+        nome_emissor: xml.nfeProc?.NFe?.infNFe?.emit?.xNome || '',
+        nome_empresa: xml.nfeProc?.NFe?.infNFe?.emit?.xFant || '',
+        nome_comercio: xml.nfeProc?.NFe?.infNFe?.emit?.xFant || '',
+        rua: xml.nfeProc?.NFe?.infNFe?.emit?.xLgr || '',
+        complemento: xml.nfeProc?.NFe?.infNFe?.emit?.xBairro || '',
+        bairro: xml.nfeProc?.NFe?.infNFe?.emit?.xBairro || '',
+        numero: xml.nfeProc?.NFe?.infNFe?.emit?.nro || '',
+        codigo_postal: xml.nfeProc?.NFe?.infNFe?.emit?.CEP || '',
+        codigo_cidade: xml.nfeProc?.NFe?.infNFe?.emit?.cMun || '',
+        nome_cidade: xml.nfeProc?.NFe?.infNFe?.emit?.xMun || '',
+        uf: xml.nfeProc?.NFe?.infNFe?.emit?.UF || '',
+        chave_pais: xml.nfeProc?.NFe?.infNFe?.emit?.cPais || '',
+        nome_pais: xml.nfeProc?.NFe?.infNFe?.emit?.xPais || '',
+        telefone: xml.nfeProc?.NFe?.infNFe?.emit?.fone || '',
+        codigo_tributacao: xml.nfeProc?.NFe?.infNFe?.emit?.idEstrangeiro || '',
+        inscricao_municipal: xml.nfeProc?.NFe?.infNFe?.emit?.IM || '',
+        codigo_atividade: xml.nfeProc?.NFe?.infNFe?.emit?.códigoAtividade || '',
+        codigo_status: xml.nfeProc?.protNFe?.infProt?.cStat || '',
+        descricao_status: xml.nfeProc?.protNFe?.infProt?.xMotivo || '',
+        ultima_atividade: xml.nfeProc?.NFe?.infNFe?.emit?.ultimaAtividade || '',
+        status_atividade: xml.nfeProc?.NFe?.infNFe?.emit?.statusAtividade || ''
       }));
 
       setJsonData({ notas_fiscais: notasFiscais });
@@ -231,15 +225,23 @@ const MonitorNFeInbound: React.FC = () => {
   };
 
   if (selectedChaveAcesso) {
-    return <DetalhesNFeInbound chaveAcesso={selectedChaveAcesso} onVoltar={handleVoltar} jsonData={jsonData} />;
+    return <DetalhesNFeInbound 
+      chaveAcesso={selectedChaveAcesso} 
+      onVoltar={handleVoltar} 
+      jsonData={jsonData}
+      jsonDataDestinatario={jsonData}
+      jsonDataEmissor={jsonData}
+      jsonDataEventos={jsonData}
+      jsonDataItens={jsonData}
+    />;
   }
 
   return (
-    <div className="monitor-nfe-container">
+    <div className="monitor-nfe-container" style={{ transform: 'scale(0.9)', transformOrigin: 'top left' }}>
       <UploadXML onProcessXML={handleProcessXML} />
       <FiltroNFeInbound onButtonClick={handleFiltroSubmit} />
-      <div style={{ marginBottom: '20px' }}>
-        <Cascader options={options} onChange={(value) => console.log(value)} placeholder="Visão" style={{width: 80}}/>
+      <div style={{ marginBottom: '15px' }}>
+        <Cascader options={options} onChange={(value) => console.log(value)} placeholder="Visão" style={{width: 70}}/>
         <Dropdown menu={{ items: etapasProcessoItems }} >
           <a onClick={(e) => e.preventDefault()}>
             <Space style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
