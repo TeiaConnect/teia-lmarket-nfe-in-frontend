@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Cascader, Dropdown, Space, Table } from 'antd';
 import type { CascaderProps, MenuProps, TableColumnsType, TableProps } from 'antd';
-import { CheckOutlined, DownOutlined } from '@ant-design/icons';
+import { CheckOutlined, DownOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import './TabelaNFe.css';
 
 type TableRowSelection<T extends object = object> = TableProps<T>['rowSelection'];
@@ -11,16 +11,33 @@ interface DataType {
   icon: React.ReactNode;
   tipoNFe: string;
   codigoStatus: number;
-  numeroDocumento: number;
-  numeroNFe: number;
-  serie: number;
-  chaveAcesso: number;
+  numeroDocumento: string;
+  numeroNFe: string;
+  serie: string;
+  chaveAcesso: string;
+  dataHoraEmissao: string;
+  processoInbound: string;
+  cnpjEmissor: string;
 }
 
 interface TabelaNFeInboundProps {
   onChaveAcessoClick?: (chaveAcesso: number) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jsonData: any;
+  jsonData: {
+    notas_fiscais: Array<{
+      identificacao_nfe: {
+        tipo_emissao: string;
+        codigo_status: string;
+        numero_nfe: string;
+        serie: string;
+      };
+      emissor: {
+        cnpj: string;
+      };
+      referencia_nfe: {
+        chave_acesso: string;
+      };
+    }>;
+  } | null;
 }
 
 interface Option {
@@ -65,21 +82,33 @@ const items: MenuProps['items'] = [
 
 const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick, jsonData }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-
   const [dataSource, setDataSource] = useState<DataType[]>([]);
+
+  const getStatusIcon = (codigoStatus: number) => {
+    switch (codigoStatus) {
+      case 100:
+        return <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '16px' }} />;
+      case 217:
+        return <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: '16px' }} />;
+      default:
+        return <ClockCircleOutlined style={{ color: '#faad14', fontSize: '16px' }} />;
+    }
+  };
 
   useEffect(() => {
     if (jsonData?.notas_fiscais) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const parsedData = jsonData.notas_fiscais.map((nota: any, index: number) => ({
+      const parsedData = jsonData.notas_fiscais.map((nota, index) => ({
         key: index,
-        icon: <CheckOutlined />,
+        icon: getStatusIcon(Number(nota.identificacao_nfe.codigo_status)),
         tipoNFe: nota.identificacao_nfe.tipo_emissao,
         codigoStatus: Number(nota.identificacao_nfe.codigo_status),
         numeroDocumento: nota.emissor.cnpj,
         numeroNFe: nota.identificacao_nfe.numero_nfe,
         serie: nota.identificacao_nfe.serie,
         chaveAcesso: nota.referencia_nfe.chave_acesso,
+        dataHoraEmissao: new Date().toLocaleString(),
+        processoInbound: 'Processado',
+        cnpjEmissor: nota.emissor.cnpj
       }));
       setDataSource(parsedData);
     }
@@ -99,83 +128,82 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
     {
       title: 'Status',
       dataIndex: 'icon',
+      width: 60,
+      fixed: 'left',
       render: (icon) => icon,
     },
     {
       title: 'Tipo NF-e',
       dataIndex: 'tipoNFe',
-    },
-    {
-      title: 'Código Status',
-      dataIndex: 'codigoStatus',
-    },
-    {
-      title: 'Nº do documento',
-      dataIndex: 'numeroDocumento',
+      width: 100,
     },
     {
       title: 'Nº NF-e',
       dataIndex: 'numeroNFe',
+      width: 100,
     },
     {
       title: 'Série',
       dataIndex: 'serie',
+      width: 80,
     },
     {
       title: 'Chave de acesso',
       dataIndex: 'chaveAcesso',
+      width: 300,
       render: (chaveAcesso) => (
         <span 
           className="chave-acesso" 
           style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
-          onClick={() => onChaveAcessoClick?.(chaveAcesso)} 
+          onClick={() => onChaveAcessoClick?.(Number(chaveAcesso))} 
         >
           {chaveAcesso}
         </span>
       ),
     },
+    {
+      title: 'Data/hora de emissão',
+      dataIndex: 'dataHoraEmissao',
+      width: 180,
+    },
+    {
+      title: 'Processo Inbound',
+      dataIndex: 'processoInbound',
+      width: 120,
+    },
+    {
+      title: 'CNPJ/CPF emissor',
+      dataIndex: 'cnpjEmissor',
+      width: 120,
+      render: (cnpjEmissor: string) => {
+        if (!cnpjEmissor) return '-';
+        const formattedCnpj = cnpjEmissor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+        return formattedCnpj;
+      },
+    },
   ];
 
   return (
-    <>
-      <Cascader options={options} onChange={onChange} placeholder="Visão" style={{width: 80}}/>
-      <Dropdown menu={{ items }} >
-        <a onClick={(e) => e.preventDefault()}>
-          <Space style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
-            Etapas do Processo inbound
-            <DownOutlined />
-          </Space>
-        </a>
-      </Dropdown>
-      <Button style={{color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 0, marginLeft: 10}}>Continuar Processo</Button>
-      <Button style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 0, marginLeft: 10 }}>Continuar Processo B2B</Button>
-      <Dropdown menu={{ items }} >
-        <a onClick={(e) => e.preventDefault()}>
-          <Space style={{ color: '#6e99cc',backgroundColor:'#F8F7FF' , marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
-            Outras Funções
-            <DownOutlined />
-          </Space>
-        </a>
-      </Dropdown>
-      <Button style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', borderColor: '#6e99cc', borderRadius: 0, marginLeft: 10 }}>Versão de impressão</Button>
-      <Dropdown menu={{ items }} >
-        <a onClick={(e) => e.preventDefault()}>
-          <Space style={{ color: '#6e99cc', backgroundColor: '#F8F7FF', marginLeft: 10, border: '1px solid #6e99cc' , padding: '5px 10px'}}>
-            Exportação
-            <DownOutlined />
-          </Space>
-        </a>
-      </Dropdown>
-      
-      <Table<DataType>
+    <div style={{ 
+      padding: '20px',
+      backgroundColor: '#fff',
+      borderRadius: '8px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      overflow: 'auto'
+    }}>
+      <Table
         rowSelection={rowSelection}
         columns={columns}
         dataSource={dataSource}
-        pagination={false}
-        size="small"
-        scroll={{ y: 400, x: 'max-content' }}
-        className="nfe-table" />
-    </>
+        size="middle"
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showTotal: (total) => `Total ${total} itens`,
+        }}
+        scroll={{ x: 1300 }}
+      />
+    </div>
   );
 };
 

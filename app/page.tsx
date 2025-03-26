@@ -1,8 +1,8 @@
 'use client';
 import React, {useState} from 'react';
 import Image from 'next/image'
-import { Breadcrumb, Layout, Menu, theme, MenuProps, Dropdown, Space, Typography } from 'antd';
-import { DownOutlined, HomeOutlined, SearchOutlined, SettingOutlined, UserOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { Breadcrumb, Layout, Menu, theme, MenuProps, Dropdown, Space, Typography, Button, Cascader } from 'antd';
+import { DownOutlined, HomeOutlined, SearchOutlined, SettingOutlined, UserOutlined, MenuFoldOutlined, MenuUnfoldOutlined, ToolOutlined, SendOutlined, InboxOutlined } from '@ant-design/icons';
 import GetJson from './getJson';
 import MonitorNFe from './MonitorNfe/PrimeiraTela/MonitorNFe';
 import MonitorNFeInbound from './MonitorNfe/PrimeiraTela/MonitorNFeInbound';
@@ -22,6 +22,28 @@ const menuItems = [
   { key: '4', label: 'Settings', icon: <SettingOutlined /> },
 ];
 
+const options = [
+  {
+    value: 'visao1',
+    label: 'Visão 1',
+  },
+  {
+    value: 'visao2',
+    label: 'Visão 2',
+  },
+];
+
+const dropdownItems = [
+  {
+    key: '1',
+    label: 'Item 1',
+  },
+  {
+    key: '2',
+    label: 'Item 2',
+  },
+];
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const items1:MenuProps['items'] = icons.map(({key, icon}) => ({
   key,
@@ -39,12 +61,26 @@ const childrenConfig: { [key: string]: {count: number, titles: string[]} } = {
 const items2: MenuProps['items'] = LegendaSideBar.map(
   (name, index) => {
     const key = String(index + 1);
-
     const { count, titles} = childrenConfig[name] || { count: 0, titles: [] };
+
+    // Adicionando ícones baseado no nome do item
+    let icon = null;
+    switch(name) {
+      case 'Configuração':
+        icon = <ToolOutlined />;
+        break;
+      case 'NFe - Outbound':
+        icon = <SendOutlined />;
+        break;
+      case 'NFe - Inbound':
+        icon = <InboxOutlined />;
+        break;
+    }
 
     return {
       key: key,
       label: name,
+      icon: icon,
       children: Array.from({ length: count }).map((_, j) => {
         const subKey = key + '-' + String(j + 1);
         return {
@@ -160,6 +196,7 @@ const App: React.FC = () => {
               background: "#ffffff",
             }}
           >
+            
             <GetJson></GetJson>
             {selectedComponent}
           </Content>
