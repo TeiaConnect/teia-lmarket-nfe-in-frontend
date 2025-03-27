@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Space, message } from 'antd';
-import { EyeOutlined, FileTextOutlined } from '@ant-design/icons';
-import { FaFileCode, FaFileInvoice, FaCheck, FaTimes, FaSync, FaPlayCircle, FaBalanceScale, FaRegistered } from 'react-icons/fa';
+import { Button, Table, Space, message, Dropdown } from 'antd';
+import { EyeOutlined, FileTextOutlined, DownOutlined } from '@ant-design/icons';
+import { FaFileCode, FaFileInvoice, FaCheck, FaTimes, FaSync, FaPlayCircle, FaBalanceScale, FaRegistered, FaSearch } from 'react-icons/fa';
 import type { ColumnsType } from 'antd/es/table';
+import type { MenuProps } from 'antd';
 
 interface ItemNFe {
   key: string;
@@ -48,8 +49,53 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
   // Carregar dados da NF-e quando a chave de acesso for fornecida
   useEffect(() => {
     if (chaveAcesso) {
-      // TODO: Implementar carregamento dos dados da NF-e
-      console.log('Carregando dados da NF-e:', chaveAcesso);
+      const carregarDadosNFe = async () => {
+        try {
+          console.log('Buscando dados da NF-e com chave:', chaveAcesso);
+          const response = await fetch(`/api/nfe/inbound?chNFe=${chaveAcesso}`);
+          const data = await response.json();
+          
+          console.log('Dados recebidos:', data);
+          
+          if (data && data.length > 0) {
+            // Procura a NF-e pela chave de acesso no protNFe
+            const nfe = data.find((item: any) => 
+              item.nfeProc?.protNFe?.infProt?.chNFe === chaveAcesso
+            );
+            
+            console.log('NF-e encontrada:', nfe);
+            
+            if (nfe?.nfeProc?.NFe?.infNFe?.det) {
+              const itens = Array.isArray(nfe.nfeProc.NFe.infNFe.det) 
+                ? nfe.nfeProc.NFe.infNFe.det 
+                : [nfe.nfeProc.NFe.infNFe.det];
+
+              const itensFormatados: ItemNFe[] = itens.map((item: any, index: number) => ({
+                key: String(index + 1),
+                codigo: item.prod.cProd || '',
+                descricao: item.prod.xProd || '',
+                quantidade: Number(item.prod.qCom) || 0,
+                valorUnitario: Number(item.prod.vUnCom) || 0,
+                valorTotal: Number(item.prod.vProd) || 0
+              }));
+
+              console.log('Itens formatados:', itensFormatados);
+              setItensNFe(itensFormatados);
+            } else {
+              console.log('Nenhum item encontrado na NF-e');
+              setItensNFe([]);
+            }
+          } else {
+            console.log('Nenhuma NF-e encontrada');
+            setItensNFe([]);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar dados da NF-e:', error);
+          setItensNFe([]);
+        }
+      };
+
+      carregarDadosNFe();
     }
   }, [chaveAcesso]);
 
@@ -193,6 +239,24 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     backgroundColor: '#ffffff'
   };
 
+  const items: MenuProps['items'] = [
+    {
+      key: '1',
+      label: 'Procurar Pedido',
+      icon: <FaSearch />
+    },
+    {
+      key: '2',
+      label: 'Procurar Pedido e Item',
+      icon: <FaSearch />
+    },
+    {
+      key: '3',
+      label: 'Pesquisa Ampliada',
+      icon: <FaSearch />
+    }
+  ];
+
   return (
     <div style={{ 
       width: '100%',
@@ -249,16 +313,17 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             padding: '15px',
             borderRadius: '4px',
             boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            height: '400px'
           }}>
             <h3 style={{ marginBottom: '15px', color: '#333' }}>Itens da NF-e</h3>
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ overflowX: 'auto', height: 'calc(100% - 40px)' }}>
               <Table
                 columns={colunasNFe}
                 dataSource={itensNFe}
                 size="small"
                 pagination={false}
-                scroll={{ x: 'max-content' }}
+                scroll={{ x: 'max-content', y: 'calc(100% - 40px)' }}
                 style={{ 
                   fontSize: '12px',
                   width: '100%'
@@ -274,16 +339,37 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             padding: '15px',
             borderRadius: '4px',
             boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            height: '400px'
           }}>
-            <h3 style={{ marginBottom: '15px', color: '#333' }}>Itens do Pedido</h3>
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '15px' 
+            }}>
+              <h3 style={{ color: '#333', margin: 0 }}>Itens do Pedido</h3>
+              <Dropdown menu={{ items }} placement="bottomRight">
+                <Button 
+                  icon={<FaSearch />} 
+                  style={{
+                    ...buttonStyle,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  Procurar itens de Pedido <DownOutlined />
+                </Button>
+              </Dropdown>
+            </div>
+            <div style={{ overflowX: 'auto', height: 'calc(100% - 40px)' }}>
               <Table
                 columns={colunasPedido}
                 dataSource={itensPedido}
                 size="small"
                 pagination={false}
-                scroll={{ x: 'max-content' }}
+                scroll={{ x: 'max-content', y: 'calc(100% - 40px)' }}
                 style={{ 
                   fontSize: '12px',
                   width: '100%'
@@ -299,16 +385,17 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
           padding: '15px',
           borderRadius: '4px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          height: '300px'
         }}>
           <h3 style={{ marginBottom: '15px', color: '#333' }}>Itens Atribuídos</h3>
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowX: 'auto', height: 'calc(100% - 40px)' }}>
             <Table
               columns={colunasAtribuidos}
               dataSource={itensAtribuidos}
               size="small"
               pagination={false}
-              scroll={{ x: 'max-content' }}
+              scroll={{ x: 'max-content', y: 'calc(100% - 40px)' }}
               style={{ 
                 fontSize: '12px',
                 width: '100%'
