@@ -84,24 +84,23 @@ const items: MenuProps['items'] = [
   },
 ];
 
-const etapasProcessoItems = [
-  {
-    key: '1',
-    label: 'Atribuir itens do pedido',
-  },
-  {
-    key: '2',
-    label: 'Simular fatura e NF-e',
-  },
-  {
-    key: '3',
-    label: 'Entrada DANFE',
-  },
-  {
-    key: '4',
-    label: 'Verificar quantidade EM',
-  },
-];
+// const etapasProcessoItems = [
+//   {
+//     key: '1',
+//     label: 'Atribuir itens do pedido',
+//   },
+//   {
+//     key: '2',
+//     label: 'Simular fatura e NF-e',
+//   },
+//   {
+//     key: '3',
+//     label: 'Entrada DANFE',
+//   },
+//   {
+//     key: '4',
+//     label: 'Verificar quantidade EM',
+//   },];
 const optionsExportacao = [
   {
     key: '1',
@@ -339,10 +338,10 @@ const MonitorNFeInbound: React.FC = () => {
       maxWidth: '100%',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'start',
-      justifyContent: 'start'
+      alignItems: 'center',
+      justifyContent: 'center'
     }}>
-      <FiltroNFeInbound onButtonClick={handleFiltroSubmit} style={{ width: '100%' }} />
+      <FiltroNFeInbound onButtonClick={handleFiltroSubmit} />
       
       <div style={{ 
         width: '100%',
@@ -370,11 +369,12 @@ const MonitorNFeInbound: React.FC = () => {
 
         {/* Grupo de Simulação e Contagem */}
         <div style={buttonGroupStyle}>
-        <Dropdown menu={{ items: etapasProcessoItems }}>
-            <Button name="etapasProcesso" icon={<FaPlayCircle/>} style={buttonStyle} title="Etapas do Processo">
-              Etapas do Processo
-            </Button>
-          </Dropdown>
+        {/* <Dropdown menu={{ items: etapasProcessoItems }}>
+          <Button name="etapasProcesso" icon={<FaPlayCircle/>} style={buttonStyle} title="Etapas do Processo">
+              Atribuir itens do pedido
+          </Button>
+          </Dropdown> */}
+          <Button name="etapasProcesso" icon={<FaPlayCircle/>} style={buttonStyle} title="Atribuir itens do pedido">Atribuir itens do pedido</Button>
           <Button icon={<FaFileCode />} style={buttonStyle} title="Simular XML">Simular XML</Button>
           <Button icon={<FaFileInvoice />} style={buttonStyle} title="Simular Fatura">Simular Fatura</Button>
           <Button icon={<FaBalanceScale/>} style={buttonStyle} title="Entrar Contagem">Contagem</Button>
@@ -441,7 +441,7 @@ const MonitorNFeInbound: React.FC = () => {
 const buttonStyle = {
   color: '#6e99cc',
   backgroundColor: '#F8F7FF',
-  borderColor: '#6e99cc',
+  // borderColor: '#6e99cc',
   borderRadius: 0,
   margin: 0,
   padding: '0 6px',
@@ -459,7 +459,7 @@ const buttonStyle = {
 // Estilo para os grupos de botões
 const buttonGroupStyle = {
   display: 'flex',
-  gap: '0',
+  // gap: '0',
   border: '1px solid #6e99cc',
   boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
   borderRadius: '8px',

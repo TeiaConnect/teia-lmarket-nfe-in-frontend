@@ -31,7 +31,7 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
   };
 
   return (
-    <div style={{ width: '90%' }}>
+    <div style={{ width: '100%'}}>
       <Text style={{ fontSize: '20px' }}>Síntese</Text>
       <Divider />
 
@@ -40,7 +40,7 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
         form={form}
         name="nest-messages"
         onFinish={onFinish}
-        style={{maxHeight: '20vh', maxWidth: '100%', display: 'flex', flexDirection: 'column', flexWrap: 'wrap', alignContent: 'space-around', alignItems: 'stretch'}}
+        style={{maxHeight: '20vh', maxWidth: '90%', display: 'flex', flexDirection: 'column', flexWrap: 'wrap', alignContent: 'space-around', alignItems: 'stretch'}}
         labelAlign="right"
         size="small"
       >
@@ -158,12 +158,45 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
             </Form.Item>
           </Space>
         </Form.Item>
+        <Form.Item name="cnpjDestinatario" label="CNPJ Destinatario:" style={{ marginBottom: 3 }}>
+          <Space>
+            <Form.Item name="cnpjDestinatarioDe" noStyle>
+              <Select
+                mode="tags"
+                style={{ fontSize: '12px', width: '18vh' }}
+                placeholder=""
+                allowClear
+              />
+            </Form.Item>
+            <Form.Item label="até:" name="cnpjDestinatarioAte" style={{ marginBottom: 0 }} >
+              <Select
+                mode="tags"
+                style={{ fontSize: '12px', width: '18vh' }}
+                placeholder=""
+                allowClear
+              />
+            </Form.Item>
+          </Space>
+        </Form.Item>
         <Form.Item name="statusDocumento" label="Status do Documento:" style={{ marginBottom: 3 }}>
           <Select
             mode="tags"
             style={{ fontSize: '12px', width: '10vh' }}
+            dropdownStyle={{ width: 'auto', minWidth: '30vh' }}
+            listHeight={400}
             placeholder=""
             allowClear
+            options={[{ value: '1', label: '1 - Processo espera por acao do usuário' }, 
+                      { value: '2', label: '2 - Erro na última etapa do processo' }, 
+                      { value: '3', label: '3 - Erro tecnico na ultima etapa do processo' }, 
+                      { value: '4', label: '4 - Erro temporario na ultima etapa do processo' }, 
+                      { value: '11', label: '11 - Processo espera por resposta assíncrona' }, 
+                      { value: '21', label: '21 - Documento sem atribuição de processo empresarial' }, 
+                      { value: '22', label: '22 - Documento sem sistema logico para execucao do processo' }, 
+                      { value: '88', label: '88 - Documento rejeitado, pode ser sobregravado' }, 
+                      { value: '89', label: '89 - Processo concluído, documento rejeitado' }, 
+                      { value: '98', label: '98 - Processo concluído, documento processado manualmente' }, 
+                      { value: '99', label: '99 - Processo concluído, documento processado corretamente' }]}
           />
         </Form.Item>
         <Form.Item name="numeroNFe" label="Nº NF-e:" style={{ marginBottom: 3 }}>
@@ -187,30 +220,110 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
             </Form.Item>
           </Space>
         </Form.Item>
+        <Form.Item name="serie" label="Série:" style={{ marginBottom: 3 }}>
+          <Select
+            mode="tags"
+            style={{ fontSize: '12px', width: '6vh' }}
+            placeholder=""
+            allowClear
+          />
+        </Form.Item>
+        <Form.Item name="tipoEmissao" label="Tipo da Emissão:" style={{ marginBottom: 3 }}>
+          <Select
+            mode="tags"
+            style={{ fontSize: '12px', width: '10vh' }}
+            placeholder=""
+            dropdownStyle={{ width: 'auto', minWidth: '30vh' }}
+            listHeight={400}
+            options={[{ value: '1', label: '1 - Normal' }, 
+                      { value: '2', label: '2 - Contingência' }, 
+                      { value: '3', label: '3 - Contingência off-line' }, 
+                      { value: '4', label: '4 - Contingência on-line' }, 
+                      { value: '5', label: '5 - Contingência off-line' }, 
+                      { value: '6', label: '6 - Contingência on-line' }, 
+                      { value: '7', label: '7 - Contingência off-line' }, 
+                      { value: '8', label: '8 - Contingência on-line' }]}
+            allowClear
+          />
+        </Form.Item>
+        <Form.Item name="processo" label="Processo:" style={{ marginBottom: 3 }}>
+              <Select
+                mode="tags"
+                labelInValue={true}
+                style={{ fontSize: '12px', width: '24vh' }}
+                dropdownStyle={{ width: 'auto', minWidth: '30vh' }}
+                listHeight={400}
+                placeholder=""
+                allowClear
+                options={[
+                        { value: 'BUPRODET', label: 'NF-e sem atrib.processo empresarial' },
+                        { value: 'CANCELOO', label: 'Cancelamento de uma NF-e' },
+                        { value: 'CANCEL01', label: 'Cancelamento de uma NF-e, processo geral' },
+                        { value: 'CANCEL02', label: 'Cancelamento de uma NF-e, se evento anterior a NF-e' },
+                        { value: 'CONSIGGR', label: 'Consignação - entrada de mercadorias' },
+                        { value: 'CONSIGIV', label: 'Consignação - fatura' },
+                        { value: 'DANWOXML', label: 'DANFE chega antes de XML' },
+                        { value: 'FLEXPR01', label: 'Proc.empresarial espec.cliente c/DANFE' },
+                        { value: 'FUTDELGR', label: 'Fornecimento futuro - entrada mercadoria' },
+                        { value: 'FUTDELIV', label: 'Fornecimento futuro - fatura' },
+                        { value: 'NORMPRCH', label: 'NF-e para pedido normal' },
+                        { value: 'PPSUMDEN', label: 'Resumo da NF-e rejeitada' },
+                        { value: 'PREPEPEC', label: 'Proc.preliminar p/NF-e com evento EPEC' },
+                        { value: 'PREPRSUM', label: 'Resumo processo preliminar para NF-e' },
+                        { value: 'SIGNAUT2', label: 'NF-e para outros processos com DANFE' },
+                        { value: 'SIGNAUTH', label: 'NF-e para outros processos sem DANFE' },
+                        { value: 'STOCKTRF', label: 'NF-e para transferência de estoque' },
+                        { value: 'SUBCON1A', label: 'NF-e para subcontrataçāo' },
+                        { value: 'SUBCON2C', label: 'Devolucao simbolica compons.subcontrat.' },
+                        { value: 'SUBCON2D', label: 'Devolucao de componentes subcontratacão' }]}
+                  />
+        </Form.Item>
+        <Form.Item name="ultimaEtapaProcesso  " label="Etapa do Processo:" style={{ marginBottom: 3 }}>
+          <Select
+            mode="tags"
+            style={{ fontSize: '12px', width: '24vh' }}
+            placeholder=""
+            allowClear
+            options={[
+              { value: 'SIGNATUR', label: 'Verificar assinatura do PN' },
+              { value: 'AUTHORIZ', label: 'Verificar autorizacao apos entrada NF-e' },
+              { value: 'NPURVALD', label: 'Validação para pedido normal' },
+              { value: 'POASSIGN', label: 'Atribuir itens do pedido' },
+              { value: 'NFESIMUL', label: 'Simular fatura e NF-e' },
+              { value: 'DELCREAT', label: 'Gerar recebimento' },
+              { value: 'ACCNOTIF', label: 'Notificação XML aceita' },
+              { value: 'RECDANFE', label: 'Entrada DANFE' },
+              { value: 'AUTHGRPT', label: 'Verificar autorizaçao após entrada DANFE' },
+              { value: 'GRCONFQU', label: 'Entrar quantidades EM' },
+              { value: 'GRFICHCK', label: 'Verificar quantidades EM' },
+              { value: 'GRMMCHCK', label: 'Preparar registro EM' },
+              { value: 'GRPOSTNG', label: 'Registrar entrada de mercadorias' },
+              { value: 'IVPOSTNG', label: 'Lançar fatura e NF-e' },
+              { value: 'SENDOPCO', label: 'Criar confirmação operaçao evento' }]}
+          />
+        </Form.Item>
         <Form.Item name="dataCriacao" label="Data de criação:" style={{ marginBottom: 3 }}>
           <Space>
             <Form.Item name="dataCriacaoDe" noStyle>
-              <DatePicker placeholder="Data Início" style={{ fontSize: '12px', borderRadius: 4, marginTop: 0, height: 26 }} />
+              <DatePicker placeholder="Data Início" style={{ fontSize: '12px', borderRadius: 4, height: 26, width: 110 }} />
             </Form.Item>
-            {/* <Divider type="vertical" style={{ height: '100%', width: 54 }} /> */}
             <Form.Item label="até:" name="dataCriacaoAte" style={{ marginBottom: 0 }} >
-              <DatePicker placeholder="Data Fim" style={{ fontSize: '12px', borderRadius: 4, marginTop: 0, height: 26 }} />
+              <DatePicker placeholder="Data Fim" style={{ fontSize: '12px', borderRadius: 4, height: 26, width: 110 }} />
             </Form.Item>
           </Space>
         </Form.Item>
         <Form.Item name="horaCriacao" label="Hora de criação:" style={{ marginBottom: 3 }}>
           <Space>
             <Form.Item name="horaCriacaoDe" noStyle>
-              <Input style={{ fontSize: '12px', borderRadius: 4, height: 26, width: 100 }} /> 
+              <DatePicker.TimePicker placeholder="Hora Início" style={{ fontSize: '12px', borderRadius: 4, height: 26, width: 110 }} /> 
             </Form.Item>
-            {/* <Divider type="vertical" style={{ height: '100%', width: 94 }} /> */}
             <Form.Item label="até:" name="horaCriacaoAte" style={{ marginBottom: 0 }} >
-              <Input style={{ fontSize: '12px', borderRadius: 4, height: 26, width: 100 }} />
+              <DatePicker.TimePicker placeholder="Hora Fim" style={{ fontSize: '12px', borderRadius: 4, height: 26, width: 110 }} />
             </Form.Item>
           </Space>
         </Form.Item>
-      </Form>
-      <Form.Item wrapperCol={{ offset: 12, span: 16 }} style={{ width: '100%', marginTop: 16 }}>
+        </Form>
+      <Form.Item wrapperCol={{ offset: 10, span: 16 }} style={{ width: '100%', marginTop: 16 }}>
           <Space>
             <Button 
               type="primary" 
