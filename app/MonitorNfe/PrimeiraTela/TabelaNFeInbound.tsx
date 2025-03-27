@@ -6,72 +6,58 @@ import './TabelaNFe.css';
 
 type TableRowSelection<T extends object = object> = TableProps<T>['rowSelection'];
 
-interface DataType {
-  key: React.Key;
-  icon: React.ReactNode;
-  tipoNFe: string;
-  codigoStatus: number;
-  numeroDocumento: string;
-  numeroNFe: string;
-  serie: string;
-  chaveAcesso: string;
-  dataHoraEmissao: string;
-  processoInbound: string;
-  cnpjEmissor: string;
-  cnpjDestinatario: string;
-  codigoUfEmissor: string;
-  tipoEmissao: string;
+export interface DataType {
+  key: string;
+  chave_acesso: string;
+  data_hora_emissao: string;
+  identificacao_nfe: {
+    tipo_emissao: string;
+    codigo_status: string;
+    numero_nfe: string;
+    serie: string;
+    data_hora_emissao: string;
+  };
+  emissor: {
+    cnpj: string;
+    codigo_uf: string;
+  };
+  destinatario: {
+    cnpj: string;
+  };
+  referencia_nfe: {
+    chave_acesso: string;
+  };
+  ambiente: string;
+  codigo_mensagem: string;
+  mensagem_sefaz: string;
+  inscricao_estadual: string;
+  nome_emissor: string;
+  nome_empresa: string;
+  nome_comercio: string;
+  rua: string;
+  complemento: string;
+  bairro: string;
+  numero: string;
+  codigo_postal: string;
+  codigo_cidade: string;
+  nome_cidade: string;
+  uf: string;
+  chave_pais: string;
+  nome_pais: string;
+  telefone: string;
+  codigo_tributacao: string;
+  inscricao_municipal: string;
+  codigo_atividade: string;
+  codigo_status: string;
+  descricao_status: string;
+  ultima_atividade: string;
+  status_atividade: string;      
 }
 
 interface TabelaNFeInboundProps {
-  onChaveAcessoClick?: (chaveAcesso: number) => void;
-  jsonData: {
-    notas_fiscais: Array<{
-      dataHoraEmissao: string;
-      identificacao_nfe: {
-        tipo_emissao: string;
-        codigo_status: string;
-        numero_nfe: string;
-        serie: string;
-        data_hora_emissao: string;
-      };
-      emissor: {
-        cnpj: string;
-        codigo_uf: string;
-      };
-      destinatario: {
-        cnpj: string;
-      };
-      referencia_nfe: {
-        chave_acesso: string;
-      };
-      ambiente: string;
-      codigo_mensagem: string;
-      mensagem_sefaz: string;
-      inscricao_estadual: string;
-      nome_emissor: string;
-      nome_empresa: string;
-      nome_comercio: string;
-      rua: string;
-      complemento: string;
-      bairro: string;
-      numero: string;
-      codigo_postal: string;
-      codigo_cidade: string;
-      nome_cidade: string;
-      uf: string;
-      chave_pais: string;
-      nome_pais: string;
-      telefone: string;
-      codigo_tributacao: string;
-      inscricao_municipal: string;
-      codigo_atividade: string;
-      codigo_status: string;
-      descricao_status: string;
-      ultima_atividade: string;
-      status_atividade: string;      
-    }>;
-  } | null;
+  onSelectChange: (selectedRow: DataType | null) => void;
+  onChaveAcessoClick: (chaveAcesso: string) => void;
+  jsonData: any[];
 }
 
 interface Option {
@@ -114,191 +100,161 @@ const items: MenuProps['items'] = [
   },
 ];
 
-const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick, jsonData }) => {
+const getStatusIcon = (codigoStatus: number) => {
+  switch (codigoStatus) {
+    case 100:
+      return <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '16px' }} />;
+    case 217:
+      return <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: '16px' }} />;
+    default:
+      return <ClockCircleOutlined style={{ color: '#faad14', fontSize: '16px' }} />;
+  }
+};
+
+const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick, jsonData, onSelectChange }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [dataSource, setDataSource] = useState<DataType[]>([]);
 
-  const getStatusIcon = (codigoStatus: number) => {
-    switch (codigoStatus) {
-      case 100:
-        return <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '16px' }} />;
-      case 217:
-        return <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: '16px' }} />;
-      default:
-        return <ClockCircleOutlined style={{ color: '#faad14', fontSize: '16px' }} />;
-    }
-  };
-
-  useEffect(() => {
-    console.log('TabelaNFeInbound - jsonData recebido:', jsonData);
-    if (jsonData?.notas_fiscais) {
-      console.log('TabelaNFeInbound - Processando notas_fiscais:', jsonData.notas_fiscais);
-      const parsedData = jsonData.notas_fiscais.map((nota, index) => {
-        console.log('TabelaNFeInbound - Processando nota:', nota);
-        const data = {
-          key: index,
-          icon: getStatusIcon(Number(nota.identificacao_nfe.codigo_status)),
-          tipoNFe: nota.identificacao_nfe.tipo_emissao,
-          codigoStatus: Number(nota.identificacao_nfe.codigo_status),
-          numeroDocumento: nota.emissor.cnpj,
-          numeroNFe: nota.identificacao_nfe.numero_nfe,
-          serie: nota.identificacao_nfe.serie,
-          chaveAcesso: nota.referencia_nfe.chave_acesso,
-          dataHoraEmissao: nota.identificacao_nfe.data_hora_emissao || nota.dataHoraEmissao,
-          processoInbound: 'NF-e para pedido normal',
-          ultimaEtapaProcesso: 'Criar confirmação operação evento',
-          cnpjEmissor: nota.emissor.cnpj,
-          cnpjDestinatario: nota.destinatario.cnpj,
-          codigoUfEmissor: nota.emissor.codigo_uf,
-          tipoEmissao: nota.identificacao_nfe.tipo_emissao,
-          ambiente: nota.ambiente
-        };
-        console.log('TabelaNFeInbound - Dados mapeados:', data);
-        return data;
-      });
-      console.log('TabelaNFeInbound - Dados finais:', parsedData);
-      setDataSource(parsedData);
-    }
-  }, [jsonData]);
-
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-    setSelectedRowKeys(newSelectedRowKeys);
+  const onSelect = (record: DataType) => {
+    setSelectedRowKeys([record.key]);
+    onSelectChange(record);
   };
 
   const rowSelection: TableRowSelection<DataType> = {
     selectedRowKeys,
-    onChange: onSelectChange,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+    onSelect,
   };
 
   const columns: TableColumnsType<DataType> = [
     {
       title: 'Status',
-      dataIndex: 'icon',
+      dataIndex: 'codigo_status',
       width: 50,
       align: 'center',
       fixed: 'left',
-      render: (icon) => icon,
+      render: (codigo_status) => getStatusIcon(Number(codigo_status)),
     },
     {
       title: 'Tipo NF-e',
-      dataIndex: 'tipoNFe',
+      dataIndex: ['identificacao_nfe', 'tipo_emissao'],
       width: 80,
       align: 'center',
     },
     {
       title: 'Nº NF-e',
-      dataIndex: 'numeroNFe',
+      dataIndex: ['identificacao_nfe', 'numero_nfe'],
       width: 100,
       align: 'center',
     },
     {
       title: 'Série',
-      dataIndex: 'serie',
+      dataIndex: ['identificacao_nfe', 'serie'],
       width: 50,
       align: 'center',
     },
     {
       title: 'Chave de acesso',
-      dataIndex: 'chaveAcesso',
+      dataIndex: 'chave_acesso',
       width: 300,
       align: 'center',
-      render: (chaveAcesso) => (
+      render: (chave_acesso) => (
         <span 
           className="chave-acesso" 
           style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
-          onClick={() => onChaveAcessoClick?.(Number(chaveAcesso))} 
+          onClick={() => onChaveAcessoClick(chave_acesso)} 
         >
-          {chaveAcesso}
+          {chave_acesso}
         </span>
       ),
     },
     {
       title: 'Data/hora de emissão',
-      dataIndex: 'dataHoraEmissao',
+      dataIndex: 'data_hora_emissao',
       width: 180,
       align: 'center',
-      render: (dataHoraEmissao: string) => {
-        if (!dataHoraEmissao) return '-';
-        return dataHoraEmissao;
+      render: (data_hora_emissao: string) => {
+        if (!data_hora_emissao) return '-';
+        return data_hora_emissao;
       },
     },
     {
       title: 'Processo Inbound',
-      dataIndex: 'processoInbound',
+      dataIndex: 'processo_inbound',
       width: 130,
       align: 'center',
     },
     {
       title: 'Ultima Etapa do Processo',
-      dataIndex: 'ultimaEtapaProcesso',
+      dataIndex: 'ultima_atividade',
       width: 180,
       align: 'center',
     },
     {
       title: 'CNPJ Emissor',
-      dataIndex: 'cnpjEmissor',
+      dataIndex: ['emissor', 'cnpj'],
       key: 'cnpjEmissor',
-      render: (cnpjEmissor: any) => {
-        if (!cnpjEmissor) return '-';
-        const cnpjString = String(cnpjEmissor);
+      render: (cnpj: any) => {
+        if (!cnpj) return '-';
+        const cnpjString = String(cnpj);
         const formattedCnpj = cnpjString.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
         return formattedCnpj;
       },
     },
     {
       title: 'CNPJ/CPF destinatário',
-      dataIndex: 'cnpjDestinatario',
+      dataIndex: ['destinatario', 'cnpj'],
       width: 150,
-      render: (cnpjDestinatario: any) => {
-        if (!cnpjDestinatario) return '-';
-        const cnpjString = String(cnpjDestinatario);
+      render: (cnpj: any) => {
+        if (!cnpj) return '-';
+        const cnpjString = String(cnpj);
         const formattedCnpj = cnpjString.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
         return formattedCnpj;
       },
     },
     {
       title: 'Codigo UF Emissor',
-      dataIndex: 'codigoUfEmissor',
+      dataIndex: ['emissor', 'codigo_uf'],
       align: 'center',
       width: 130,
-      render: (codigoUfEmissor: string) => {
-        if (!codigoUfEmissor) return '-';
-        return codigoUfEmissor;
+      render: (codigo_uf: string) => {
+        if (!codigo_uf) return '-';
+        return codigo_uf;
       },
     },
     {
       title: 'Tipo de Emissão',
-      dataIndex: 'tipoEmissao',
+      dataIndex: ['identificacao_nfe', 'tipo_emissao'],
       width: 120,
       align: 'center',
-      render: (tipoEmissao: string) => {
-        if (tipoEmissao == '1') {
+      render: (tipo_emissao: string) => {
+        if (tipo_emissao == '1') {
           return 'Normal'
         }
-        if (tipoEmissao == '2') {
+        if (tipo_emissao == '2') {
           return 'Contingência'
         }
-        if (tipoEmissao == '3') {
+        if (tipo_emissao == '3') {
           return 'ContingênciaSCAN'
         }
-        if (tipoEmissao == '4') {
+        if (tipo_emissao == '4') {
           return 'ContingênciaDPEC'
         }
-        if (tipoEmissao == '5') {
+        if (tipo_emissao == '5') {
           return 'ContingênciaFS'
         }
-        if (tipoEmissao == '6') {
+        if (tipo_emissao == '6') {
           return 'ContingênciaSVCAN'
         }
-        if (tipoEmissao == '7') {
+        if (tipo_emissao == '7') {
           return 'ContingênciaSVCRS'
         }
-        if (tipoEmissao == '8') {
+        if (tipo_emissao == '8') {
           return 'ContingênciaOFFLINE'
         }
-        if (!tipoEmissao) return '-';
-        return tipoEmissao;
+        if (!tipo_emissao) return '-';
+        return tipo_emissao;
       },
     },
     {
@@ -311,7 +267,6 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
         return ambiente;
       },
     },
-    
   ];
 
   return (
@@ -327,7 +282,7 @@ const TabelaNFeInbound: React.FC<TabelaNFeInboundProps> = ({ onChaveAcessoClick,
       <Table
         rowSelection={rowSelection}
         columns={columns}
-        dataSource={dataSource}
+        dataSource={jsonData}
         size="small"
         pagination={{
           pageSize: 10,

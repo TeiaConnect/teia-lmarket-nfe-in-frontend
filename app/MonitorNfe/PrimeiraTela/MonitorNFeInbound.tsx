@@ -5,11 +5,13 @@ import FiltroNFeInbound from './FiltroNFeInbound';
 import TabelaNFeInbound from './TabelaNFeInbound';
 import DetalhesNFeInbound from './DetalhesNFeInbound';
 import { message, Button, Dropdown, Space, Cascader, Upload } from 'antd';
-import { DownOutlined, FileTextOutlined, FileExcelOutlined, PrinterOutlined, ReloadOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, HistoryOutlined, SettingOutlined, UploadOutlined, PlayCircleTwoTone } from '@ant-design/icons';
+import { DownOutlined, FileTextOutlined, FileExcelOutlined, PrinterOutlined, ReloadOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, HistoryOutlined, SettingOutlined, UploadOutlined, PlayCircleTwoTone, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { FaBalanceScale, FaFileCode, FaFileInvoice, FaHistory, FaPlayCircle, FaUpload, FaTrash, FaSync } from 'react-icons/fa';
 import type { MenuProps } from 'antd';
-import { NFeData } from '../types/NFeData';
 import { FaRegistered } from 'react-icons/fa6';
+import { useRouter } from 'next/navigation';
+import { DataType } from './TabelaNFeInbound';
+import { NFeData } from '../types/NFeData';
 
 const options = [
   {
@@ -84,23 +86,6 @@ const items: MenuProps['items'] = [
   },
 ];
 
-// const etapasProcessoItems = [
-//   {
-//     key: '1',
-//     label: 'Atribuir itens do pedido',
-//   },
-//   {
-//     key: '2',
-//     label: 'Simular fatura e NF-e',
-//   },
-//   {
-//     key: '3',
-//     label: 'Entrada DANFE',
-//   },
-//   {
-//     key: '4',
-//     label: 'Verificar quantidade EM',
-//   },];
 const optionsExportacao = [
   {
     key: '1',
@@ -118,10 +103,13 @@ const optionsExportacao = [
     function: 'exportarComo',
   },
 ];
-const MonitorNFeInbound: React.FC = () => {
-  const [jsonData, setJsonData] = useState<NFeData | null>(null);
+
+export default function MonitorNFeInbound() {
+  const router = useRouter();
+  const [selectedRow, setSelectedRow] = useState<DataType | null>(null);
   const [selectedChaveAcesso, setSelectedChaveAcesso] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [jsonData, setJsonData] = useState<NFeData | null>(null);
 
   const uploadProps = {
     name: 'file',
@@ -212,6 +200,9 @@ const MonitorNFeInbound: React.FC = () => {
           }
 
           return {
+            key: protNFe.chNFe || '',
+            chave_acesso: protNFe.chNFe || '',
+            data_hora_emissao: nfe.ide.dhEmi || '',
             identificacao_nfe: {
               tipo_emissao: nfe.ide.tpEmis || '',
               codigo_status: protNFe.cStat || '',
@@ -221,32 +212,7 @@ const MonitorNFeInbound: React.FC = () => {
             },
             emissor: {
               cnpj: nfe.emit.CNPJ || '',
-              codigo_uf: nfe.emit.enderEmit?.UF || '',
-              status: protNFe.xMotivo || '',
-              ultima_atividade: doc.created_at || '',
-              status_atividade: protNFe.cStat || '',
-              codigo_status: protNFe.cStat || '',
-              descricao_status: protNFe.xMotivo || '',
-              codigo_mensagem: protNFe.cStat || '',
-              mensagem_sefaz: protNFe.xMotivo || '',
-              inscricao_estadual: nfe.emit.IE || '',
-              nome_emissor: nfe.emit.xNome || '',
-              nome_empresa: nfe.emit.xNome || '',
-              nome_comercio: nfe.emit.xFant || '',
-              rua: nfe.emit.enderEmit?.xLgr || '',
-              complemento: nfe.emit.enderEmit?.xCpl || '',
-              bairro: nfe.emit.enderEmit?.xBairro || '',
-              numero: nfe.emit.enderEmit?.nro || '',
-              codigo_postal: nfe.emit.enderEmit?.CEP || '',
-              codigo_cidade: nfe.emit.enderEmit?.cMun || '',
-              nome_cidade: nfe.emit.enderEmit?.xMun || '',
-              uf: nfe.emit.enderEmit?.UF || '',
-              chave_pais: nfe.emit.enderEmit?.cPais || '',
-              nome_pais: nfe.emit.enderEmit?.xPais || '',
-              telefone: nfe.emit.enderEmit?.fone || '',
-              codigo_tributacao: nfe.emit.CRT || '',
-              inscricao_municipal: nfe.emit.IM || '',
-              codigo_atividade: nfe.emit.CNAE || ''
+              codigo_uf: nfe.emit.enderEmit?.UF || ''
             },
             destinatario: {
               cnpj: nfe.dest.CNPJ || ''
@@ -285,8 +251,9 @@ const MonitorNFeInbound: React.FC = () => {
           return null;
         }
       }).filter(Boolean);
+
       console.log('Notas fiscais mapeadas:', notasFiscais);
-      setJsonData({ notas_fiscais: notasFiscais as any }); // Forçando o tipo any temporariamente
+      setJsonData({ notas_fiscais: notasFiscais });
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
       message.error('Erro ao buscar dados. Por favor, tente novamente.');
@@ -295,8 +262,19 @@ const MonitorNFeInbound: React.FC = () => {
     }
   };
 
-  const handleChaveAcessoClick = (chaveAcesso: number) => {
-    setSelectedChaveAcesso(chaveAcesso);
+  const getStatusIcon = (codigoStatus: number) => {
+    switch (codigoStatus) {
+      case 100:
+        return <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '16px' }} />;
+      case 217:
+        return <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: '16px' }} />;
+      default:
+        return <ClockCircleOutlined style={{ color: '#faad14', fontSize: '16px' }} />;
+    }
+  };
+
+  const handleChaveAcessoClick = (chaveAcesso: string) => {
+    setSelectedChaveAcesso(Number(chaveAcesso));
   };
 
   const handleVoltar = () => {
@@ -316,6 +294,14 @@ const MonitorNFeInbound: React.FC = () => {
     });
   };
 
+  const handleAtribuirItensPedido = (chaveAcesso: string) => {
+    if (!chaveAcesso) {
+      message.error('Selecione uma NF-e para atribuir itens do pedido');
+      return;
+    }
+    router.push(`/MonitorNfe/PrimeiraTela/AtribuirItensPedido?chaveAcesso=${chaveAcesso}`);
+  };
+
   if (selectedChaveAcesso) {
     return <DetalhesNFeInbound 
       chaveAcesso={selectedChaveAcesso} 
@@ -330,8 +316,6 @@ const MonitorNFeInbound: React.FC = () => {
 
   return (
     <div className="monitor-nfe-container" style={{ 
-      // transform: 'scale(0.85)', 
-      // transformOrigin: 'top left',
       width: '100%',
       padding: '5px',
       backgroundColor: '#ffffff',
@@ -349,45 +333,34 @@ const MonitorNFeInbound: React.FC = () => {
         display: 'flex',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-
-        // gap: '10px',
         alignItems: 'center',
         padding: '4px',
         backgroundColor: '#f5f5f5',
         borderRadius: '4px',
         border: '1px solid #e8e8e8'
       }}>
-        {/* Grupo de Visão e Processo */}
-        {/* <div style={buttonGroupStyle}>
-          <Cascader 
-            options={options} 
-            onChange={(value) => console.log(value)} 
-            placeholder="Visão" 
-            style={{width: 80}}
-          />
-        </div> */}
-
-        {/* Grupo de Simulação e Contagem */}
         <div style={buttonGroupStyle}>
-        {/* <Dropdown menu={{ items: etapasProcessoItems }}>
-          <Button name="etapasProcesso" icon={<FaPlayCircle/>} style={buttonStyle} title="Etapas do Processo">
-              Atribuir itens do pedido
+          <Button 
+            name="etapasProcesso" 
+            icon={<FaPlayCircle/>} 
+            style={buttonStyle} 
+            title="Atribuir itens do pedido"
+            onClick={() => handleAtribuirItensPedido(selectedRow?.chave_acesso || '')}
+            disabled={!selectedRow}
+          >
+            Atribuir itens do pedido
           </Button>
-          </Dropdown> */}
-          <Button name="etapasProcesso" icon={<FaPlayCircle/>} style={buttonStyle} title="Atribuir itens do pedido">Atribuir itens do pedido</Button>
           <Button icon={<FaFileCode />} style={buttonStyle} title="Simular XML">Simular XML</Button>
           <Button icon={<FaFileInvoice />} style={buttonStyle} title="Simular Fatura">Simular Fatura</Button>
           <Button icon={<FaBalanceScale/>} style={buttonStyle} title="Entrar Contagem">Contagem</Button>
         </div>
 
-        {/* Grupo de Registro e Visualização */}
         <div style={buttonGroupStyle}>
           <Button icon={<FaRegistered/>} style={buttonStyle} title="Registrar MIGO/MIRO">MIGO/MIRO</Button>
           <Button icon={<EyeOutlined />} style={buttonStyle} title="Exibir XML">Exibir XML</Button>
           <Button icon={<FileTextOutlined />} style={buttonStyle} title="Exibir DANFE">Exibir DANFE</Button>
         </div>
 
-        {/* Grupo de Eventos e XML */}
         <div style={buttonGroupStyle}>
           <Button icon={<FaHistory/>} style={buttonStyle} title="Eventos">Eventos</Button>
           <Upload
@@ -400,7 +373,6 @@ const MonitorNFeInbound: React.FC = () => {
           <Button icon={<FaTrash/>} style={buttonStyle} title="Excluir XML">Excluir XML</Button>
         </div>
 
-        {/* Grupo de Processos */}
         <div style={buttonGroupStyle}>
           <Button icon={<FaSync/>} style={buttonStyle} title="Redeterminar Processo">Redeterminar Processo</Button>
           <Dropdown menu={{ items }}>
@@ -408,7 +380,6 @@ const MonitorNFeInbound: React.FC = () => {
           </Dropdown>
         </div>
 
-        {/* Grupo de Exportação */}
         <div style={buttonGroupStyle}>
           <Button icon={<PrinterOutlined />} style={buttonStyle} title="Versão de impressão" />
           <Dropdown menu={{ items: optionsExportacao }}>
@@ -424,24 +395,19 @@ const MonitorNFeInbound: React.FC = () => {
         fontSize: '12px'
       }}>
         <TabelaNFeInbound 
-          jsonData={{
-            notas_fiscais: jsonData?.notas_fiscais?.map(nota => ({
-              ...nota,
-              dataHoraEmissao: nota.identificacao_nfe.data_hora_emissao
-            })) || []
-          }}
+          onSelectChange={setSelectedRow}
           onChaveAcessoClick={handleChaveAcessoClick}
+          jsonData={jsonData?.notas_fiscais || []}
         />
       </div>
     </div>
   );
-};
+}
 
 // Estilo comum para os botões
 const buttonStyle = {
   color: '#6e99cc',
   backgroundColor: '#F8F7FF',
-  // borderColor: '#6e99cc',
   borderRadius: 0,
   margin: 0,
   padding: '0 6px',
@@ -459,13 +425,9 @@ const buttonStyle = {
 // Estilo para os grupos de botões
 const buttonGroupStyle = {
   display: 'flex',
-  // gap: '0',
   border: '1px solid #6e99cc',
   boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
   borderRadius: '8px',
   overflow: 'hidden',
   backgroundColor: '#ffffff'
-
 };
-
-export default MonitorNFeInbound; 
