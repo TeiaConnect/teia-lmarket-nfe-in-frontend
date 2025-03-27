@@ -330,28 +330,43 @@ const MonitorNFeInbound: React.FC = () => {
   }
 
   return (
-    <div className="monitor-nfe-container" style={{ transform: 'scale(0.9)', transformOrigin: 'top left' }}>
-      <FiltroNFeInbound onButtonClick={handleFiltroSubmit} />
+    <div className="monitor-nfe-container" style={{ 
+      // transform: 'scale(0.85)', 
+      // transformOrigin: 'top left',
+      width: '100%',
+      padding: '5px',
+      backgroundColor: '#ffffff',
+      maxWidth: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'start',
+      justifyContent: 'start'
+    }}>
+      <FiltroNFeInbound onButtonClick={handleFiltroSubmit} style={{ width: '100%' }} />
       
       <div style={{ 
-        marginBottom: '15px',
+        width: '100%',
+        marginBottom: '4px',
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '8px',
+        justifyContent: 'space-between',
+
+        // gap: '10px',
         alignItems: 'center',
-        padding: '10px',
+        padding: '4px',
         backgroundColor: '#f5f5f5',
-        borderRadius: '4px'
+        borderRadius: '4px',
+        border: '1px solid #e8e8e8'
       }}>
         {/* Grupo de Visão e Processo */}
-        <div style={buttonGroupStyle}>
+        {/* <div style={buttonGroupStyle}>
           <Cascader 
             options={options} 
             onChange={(value) => console.log(value)} 
             placeholder="Visão" 
             style={{width: 80}}
           />
-        </div>
+        </div> */}
 
         {/* Grupo de Simulação e Contagem */}
         <div style={buttonGroupStyle}>
@@ -401,15 +416,23 @@ const MonitorNFeInbound: React.FC = () => {
           </Dropdown>
         </div>
       </div>
-      <TabelaNFeInbound 
-        jsonData={{
-          notas_fiscais: jsonData?.notas_fiscais?.map(nota => ({
-            ...nota,
-            dataHoraEmissao: nota.identificacao_nfe.data_hora_emissao
-          })) || []
-        }}
-        onChaveAcessoClick={handleChaveAcessoClick}
-      />
+      <div style={{ 
+        width: '100%', 
+        overflowX: 'auto',
+        margin: 0,
+        padding: 0,
+        fontSize: '12px'
+      }}>
+        <TabelaNFeInbound 
+          jsonData={{
+            notas_fiscais: jsonData?.notas_fiscais?.map(nota => ({
+              ...nota,
+              dataHoraEmissao: nota.identificacao_nfe.data_hora_emissao
+            })) || []
+          }}
+          onChaveAcessoClick={handleChaveAcessoClick}
+        />
+      </div>
     </div>
   );
 };
@@ -421,11 +444,16 @@ const buttonStyle = {
   borderColor: '#6e99cc',
   borderRadius: 0,
   margin: 0,
-  padding: '0 12px',
-  height: '32px',
+  padding: '0 6px',
+  height: '26px',
   display: 'flex',
   alignItems: 'center',
-  gap: '4px'
+  gap: '2px',
+  transition: 'all 0.3s ease',
+  ':hover': {
+    backgroundColor: '#e6f0ff',
+    borderColor: '#4a7ab0'
+  }
 };
 
 // Estilo para os grupos de botões
@@ -433,8 +461,11 @@ const buttonGroupStyle = {
   display: 'flex',
   gap: '0',
   border: '1px solid #6e99cc',
-  borderRadius: '4px',
-  overflow: 'hidden'
+  boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
+  borderRadius: '8px',
+  overflow: 'hidden',
+  backgroundColor: '#ffffff'
+
 };
 
 export default MonitorNFeInbound; 

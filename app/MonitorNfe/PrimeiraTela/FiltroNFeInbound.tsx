@@ -31,7 +31,7 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
   };
 
   return (
-    <div>
+    <div style={{ width: '90%' }}>
       <Text style={{ fontSize: '20px' }}>Síntese</Text>
       <Divider />
 
@@ -40,11 +40,11 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
         form={form}
         name="nest-messages"
         onFinish={onFinish}
-        style={{ maxWidth: 500 }}
+        style={{maxHeight: '20vh', maxWidth: '100%', display: 'flex', flexDirection: 'column', flexWrap: 'wrap', alignContent: 'space-around', alignItems: 'stretch'}}
         labelAlign="right"
         size="small"
       >
-        <Form.Item name="chaveAcesso" label="Chave de acesso:" style={{ marginBottom: 2 }}>
+        <Form.Item name="chaveAcesso" label="Chave de acesso:" style={{ marginBottom: 3 }}>
           <Select
             mode="tags"
             style={{ fontSize: '11px' }}
@@ -147,7 +147,7 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
                 allowClear
               />
             </Form.Item>
-            <Divider type="vertical" style={{ height: '100%' }} />
+            {/* <Divider type="vertical" style={{ height: '100%'}} /> */}
             <Form.Item label="até:" name="cnpjEmissorAte" style={{ marginBottom: 0 }} >
               <Select
                 mode="tags"
@@ -176,8 +176,8 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
                 allowClear
               />
             </Form.Item>
-            <Divider type="vertical" style={{ height: '100%', width: 33 }} />
-            <Form.Item label="até:" name="numeroNFeAte" style={{ marginBottom: 0 }} >
+            {/* <Divider type="vertical" style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} /> */}
+            <Form.Item label="até:" name="numeroNFeAte" style={{ marginBottom: 0}} >
               <Select
                 mode="tags"
                 style={{ fontSize: '12px', width: '15vh' }}
@@ -192,7 +192,7 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
             <Form.Item name="dataCriacaoDe" noStyle>
               <DatePicker placeholder="Data Início" style={{ fontSize: '12px', borderRadius: 4, marginTop: 0, height: 26 }} />
             </Form.Item>
-            <Divider type="vertical" style={{ height: '100%', width: 54 }} />
+            {/* <Divider type="vertical" style={{ height: '100%', width: 54 }} /> */}
             <Form.Item label="até:" name="dataCriacaoAte" style={{ marginBottom: 0 }} >
               <DatePicker placeholder="Data Fim" style={{ fontSize: '12px', borderRadius: 4, marginTop: 0, height: 26 }} />
             </Form.Item>
@@ -203,14 +203,14 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
             <Form.Item name="horaCriacaoDe" noStyle>
               <Input style={{ fontSize: '12px', borderRadius: 4, height: 26, width: 100 }} /> 
             </Form.Item>
-            <Divider type="vertical" style={{ height: '100%', width: 94 }} />
+            {/* <Divider type="vertical" style={{ height: '100%', width: 94 }} /> */}
             <Form.Item label="até:" name="horaCriacaoAte" style={{ marginBottom: 0 }} >
               <Input style={{ fontSize: '12px', borderRadius: 4, height: 26, width: 100 }} />
             </Form.Item>
           </Space>
         </Form.Item>
-
-        <Form.Item wrapperCol={{ offset: 8, span: 16 }} style={{ marginTop: 16 }}>
+      </Form>
+      <Form.Item wrapperCol={{ offset: 12, span: 16 }} style={{ width: '100%', marginTop: 16 }}>
           <Space>
             <Button 
               type="primary" 
@@ -236,7 +236,6 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
             </Button>
           </Space>
         </Form.Item>
-      </Form>
     </div>
   );
 };
