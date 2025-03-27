@@ -4,9 +4,8 @@ import React, { useState, useEffect } from 'react';
 import FiltroNFeInbound from './FiltroNFeInbound';
 import TabelaNFeInbound from './TabelaNFeInbound';
 import DetalhesNFeInbound from './DetalhesNFeInbound';
-import UploadXML from './UploadXML';
-import { message, Button, Dropdown, Space, Cascader } from 'antd';
-import { DownOutlined, FileTextOutlined, FileExcelOutlined, PrinterOutlined, ReloadOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, HistoryOutlined, SettingOutlined } from '@ant-design/icons';
+import { message, Button, Dropdown, Space, Cascader, Upload } from 'antd';
+import { DownOutlined, FileTextOutlined, FileExcelOutlined, PrinterOutlined, ReloadOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, HistoryOutlined, SettingOutlined, UploadOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { NFeData } from '../types/NFeData';
 
@@ -122,6 +121,62 @@ const MonitorNFeInbound: React.FC = () => {
   const [jsonData, setJsonData] = useState<NFeData | null>(null);
   const [selectedChaveAcesso, setSelectedChaveAcesso] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const uploadProps = {
+    name: 'file',
+    multiple: true,
+    accept: '.xml',
+    beforeUpload: (file: File) => {
+      const isXML = file.type === 'text/xml' || file.name.endsWith('.xml');
+      if (!isXML) {
+        message.error('Apenas arquivos XML são permitidos!');
+        return false;
+      }
+      return true;
+    },
+    customRequest: async ({ file, onSuccess, onError }: any) => {
+      try {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const xmlContent = e.target?.result as string;
+            const response = await fetch('/api/nfe/inbound', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                xml_content: xmlContent,
+                created_at: new Date().toISOString()
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Erro ao fazer upload do arquivo');
+            }
+
+            const data = await response.json();
+            if (data.success) {
+              message.success('Arquivo XML processado com sucesso!');
+              onSuccess('ok');
+              handleFiltroSubmit({});
+            } else {
+              throw new Error(data.error || 'Erro ao processar XML');
+            }
+          } catch (error) {
+            console.error('Erro ao processar XML:', error);
+            message.error('Erro ao processar arquivo XML');
+            onError(error);
+          }
+        };
+        reader.readAsText(file);
+      } catch (error) {
+        console.error('Erro ao ler arquivo:', error);
+        message.error('Erro ao ler arquivo');
+        onError(error);
+      }
+    }
+  };
 
   const handleFiltroSubmit = async (values: any) => {
     try {
@@ -274,7 +329,6 @@ const MonitorNFeInbound: React.FC = () => {
 
   return (
     <div className="monitor-nfe-container" style={{ transform: 'scale(0.9)', transformOrigin: 'top left' }}>
-      <UploadXML onProcessXML={handleProcessXML} />
       <FiltroNFeInbound onButtonClick={handleFiltroSubmit} />
       
       <div style={{ 
@@ -293,10 +347,10 @@ const MonitorNFeInbound: React.FC = () => {
             options={options} 
             onChange={(value) => console.log(value)} 
             placeholder="Visão" 
-            style={{width: 100}}
+            style={{width: 80}}
           />
           <Dropdown menu={{ items: etapasProcessoItems }}>
-            <Button icon={<SettingOutlined />} style={buttonStyle}>
+            <Button name="etapasProcesso" icon={<SettingOutlined />} style={buttonStyle} title="Etapas do Processo">
               Etapas do Processo
             </Button>
           </Dropdown>
@@ -304,64 +358,44 @@ const MonitorNFeInbound: React.FC = () => {
 
         {/* Grupo de Simulação e Contagem */}
         <div style={buttonGroupStyle}>
-          <Button icon={<FileTextOutlined />} style={buttonStyle}>
-            Simular XML
-          </Button>
-          <Button icon={<FileExcelOutlined />} style={buttonStyle}>
-            Simular Fatura
-          </Button>
-          <Button icon={<ReloadOutlined />} style={buttonStyle}>
-            Entrar Contagem
-          </Button>
+          <Button icon={<FileExcelOutlined />} style={buttonStyle} title="Simular XML" />
+          <Button icon={<FileExcelOutlined />} style={buttonStyle} title="Simular Fatura" />
+          <Button icon={<ReloadOutlined />} style={buttonStyle} title="Entrar Contagem" />
         </div>
 
         {/* Grupo de Registro e Visualização */}
         <div style={buttonGroupStyle}>
-          <Button icon={<PrinterOutlined />} style={buttonStyle}>
-            Registrar MIGO/MIRO
-          </Button>
-          <Button icon={<EyeOutlined />} style={buttonStyle}>
-            Exibir XML
-          </Button>
-          <Button icon={<FileTextOutlined />} style={buttonStyle}>
-            Exibir DANFE
-          </Button>
+          <Button icon={<PrinterOutlined />} style={buttonStyle} title="Registrar MIGO/MIRO" />
+          <Button icon={<EyeOutlined />} style={buttonStyle} title="Exibir XML" />
+          <Button icon={<FileTextOutlined />} style={buttonStyle} title="Exibir DANFE" />
         </div>
 
         {/* Grupo de Eventos e XML */}
         <div style={buttonGroupStyle}>
-          <Button icon={<HistoryOutlined />} style={buttonStyle}>
-            Eventos
-          </Button>
-          <Button icon={<PlusOutlined />} style={buttonStyle}>
-            Incluir XML
-          </Button>
-          <Button icon={<DeleteOutlined />} style={buttonStyle}>
-            Excluir XML
-          </Button>
+          <Button icon={<HistoryOutlined />} style={buttonStyle} title="Eventos" />
+          <Upload
+            {...uploadProps}
+            showUploadList={false}
+            style={{ display: 'inline-block' }}
+          >
+            <Button icon={<UploadOutlined />} style={buttonStyle} title="Incluir XML" />
+          </Upload>
+          <Button icon={<DeleteOutlined />} style={buttonStyle} title="Excluir XML" />
         </div>
 
         {/* Grupo de Processos */}
         <div style={buttonGroupStyle}>
-          <Button style={buttonStyle}>
-            Redeterminar Processo
-          </Button>
+          <Button icon={<ReloadOutlined />} style={buttonStyle} title="Redeterminar Processo" />
           <Dropdown menu={{ items }}>
-            <Button style={buttonStyle}>
-              Outros Processos
-            </Button>
+            <Button icon={<SettingOutlined />} style={buttonStyle} title="Outros Processos" />
           </Dropdown>
         </div>
 
         {/* Grupo de Exportação */}
         <div style={buttonGroupStyle}>
-          <Button style={buttonStyle}>
-            Versão de impressão
-          </Button>
+          <Button icon={<PrinterOutlined />} style={buttonStyle} title="Versão de impressão" />
           <Dropdown menu={{ items: optionsExportacao }}>
-            <Button style={buttonStyle}>
-              Exportação
-            </Button>
+            <Button icon={<FileExcelOutlined />} style={buttonStyle} title="Exportação" />
           </Dropdown>
         </div>
       </div>
