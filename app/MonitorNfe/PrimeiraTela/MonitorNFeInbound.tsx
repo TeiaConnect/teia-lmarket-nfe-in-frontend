@@ -5,9 +5,11 @@ import FiltroNFeInbound from './FiltroNFeInbound';
 import TabelaNFeInbound from './TabelaNFeInbound';
 import DetalhesNFeInbound from './DetalhesNFeInbound';
 import { message, Button, Dropdown, Space, Cascader, Upload } from 'antd';
-import { DownOutlined, FileTextOutlined, FileExcelOutlined, PrinterOutlined, ReloadOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, HistoryOutlined, SettingOutlined, UploadOutlined } from '@ant-design/icons';
+import { DownOutlined, FileTextOutlined, FileExcelOutlined, PrinterOutlined, ReloadOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, HistoryOutlined, SettingOutlined, UploadOutlined, PlayCircleTwoTone } from '@ant-design/icons';
+import { FaBalanceScale, FaFileCode, FaFileInvoice, FaHistory, FaPlayCircle, FaUpload, FaTrash, FaSync } from 'react-icons/fa';
 import type { MenuProps } from 'antd';
 import { NFeData } from '../types/NFeData';
+import { FaRegistered } from 'react-icons/fa6';
 
 const options = [
   {
@@ -349,45 +351,45 @@ const MonitorNFeInbound: React.FC = () => {
             placeholder="Visão" 
             style={{width: 80}}
           />
-          <Dropdown menu={{ items: etapasProcessoItems }}>
-            <Button name="etapasProcesso" icon={<SettingOutlined />} style={buttonStyle} title="Etapas do Processo">
-              Etapas do Processo
-            </Button>
-          </Dropdown>
         </div>
 
         {/* Grupo de Simulação e Contagem */}
         <div style={buttonGroupStyle}>
-          <Button icon={<FileExcelOutlined />} style={buttonStyle} title="Simular XML" />
-          <Button icon={<FileExcelOutlined />} style={buttonStyle} title="Simular Fatura" />
-          <Button icon={<ReloadOutlined />} style={buttonStyle} title="Entrar Contagem" />
+        <Dropdown menu={{ items: etapasProcessoItems }}>
+            <Button name="etapasProcesso" icon={<FaPlayCircle/>} style={buttonStyle} title="Etapas do Processo">
+              Etapas do Processo
+            </Button>
+          </Dropdown>
+          <Button icon={<FaFileCode />} style={buttonStyle} title="Simular XML">Simular XML</Button>
+          <Button icon={<FaFileInvoice />} style={buttonStyle} title="Simular Fatura">Simular Fatura</Button>
+          <Button icon={<FaBalanceScale/>} style={buttonStyle} title="Entrar Contagem">Contagem</Button>
         </div>
 
         {/* Grupo de Registro e Visualização */}
         <div style={buttonGroupStyle}>
-          <Button icon={<PrinterOutlined />} style={buttonStyle} title="Registrar MIGO/MIRO" />
-          <Button icon={<EyeOutlined />} style={buttonStyle} title="Exibir XML" />
-          <Button icon={<FileTextOutlined />} style={buttonStyle} title="Exibir DANFE" />
+          <Button icon={<FaRegistered/>} style={buttonStyle} title="Registrar MIGO/MIRO">MIGO/MIRO</Button>
+          <Button icon={<EyeOutlined />} style={buttonStyle} title="Exibir XML">Exibir XML</Button>
+          <Button icon={<FileTextOutlined />} style={buttonStyle} title="Exibir DANFE">Exibir DANFE</Button>
         </div>
 
         {/* Grupo de Eventos e XML */}
         <div style={buttonGroupStyle}>
-          <Button icon={<HistoryOutlined />} style={buttonStyle} title="Eventos" />
+          <Button icon={<FaHistory/>} style={buttonStyle} title="Eventos">Eventos</Button>
           <Upload
             {...uploadProps}
             showUploadList={false}
             style={{ display: 'inline-block' }}
           >
-            <Button icon={<UploadOutlined />} style={buttonStyle} title="Incluir XML" />
+            <Button icon={<FaUpload/>} style={buttonStyle} title="Incluir XML">Incluir XML</Button>
           </Upload>
-          <Button icon={<DeleteOutlined />} style={buttonStyle} title="Excluir XML" />
+          <Button icon={<FaTrash/>} style={buttonStyle} title="Excluir XML">Excluir XML</Button>
         </div>
 
         {/* Grupo de Processos */}
         <div style={buttonGroupStyle}>
-          <Button icon={<ReloadOutlined />} style={buttonStyle} title="Redeterminar Processo" />
+          <Button icon={<FaSync/>} style={buttonStyle} title="Redeterminar Processo">Redeterminar Processo</Button>
           <Dropdown menu={{ items }}>
-            <Button icon={<SettingOutlined />} style={buttonStyle} title="Outros Processos" />
+            <Button icon={<SettingOutlined />} style={buttonStyle} title="Outros Processos">Outros Processos</Button>
           </Dropdown>
         </div>
 
