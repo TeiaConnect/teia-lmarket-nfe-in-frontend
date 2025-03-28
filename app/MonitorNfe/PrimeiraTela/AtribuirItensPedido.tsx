@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Space, message, Dropdown } from 'antd';
+import { Button, Table, Space, message, Dropdown, Modal } from 'antd';
 import { EyeOutlined, FileTextOutlined, DownOutlined } from '@ant-design/icons';
 import { FaFileCode, FaFileInvoice, FaCheck, FaTimes, FaSync, FaPlayCircle, FaBalanceScale, FaRegistered, FaSearch } from 'react-icons/fa';
 import type { ColumnsType } from 'antd/es/table';
@@ -45,6 +45,8 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
   const [itensNFe, setItensNFe] = useState<ItemNFe[]>([]);
   const [itensPedido, setItensPedido] = useState<ItemPedido[]>([]);
   const [itensAtribuidos, setItensAtribuidos] = useState<ItemAtribuido[]>([]);
+  const [detalhesNFe, setDetalhesNFe] = useState<any>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   // Carregar dados da NF-e quando a chave de acesso for fornecida
   useEffect(() => {
@@ -257,6 +259,29 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     }
   ];
 
+  const handleChaveAcessoClick = async (chaveAcesso: string) => {
+    try {
+      const response = await fetch(`/api/nfe/inbound?chNFe=${chaveAcesso}`);
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const nfe = data.find((item: any) => 
+          item.nfeProc?.protNFe?.infProt?.chNFe === chaveAcesso
+        );
+        
+        if (nfe) {
+          setDetalhesNFe(nfe);
+          setIsModalVisible(true);
+        } else {
+          message.error('NF-e não encontrada');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar detalhes da NF-e:', error);
+      message.error('Erro ao carregar detalhes da NF-e');
+    }
+  };
+
   return (
     <div style={{ 
       width: '100%',
@@ -287,7 +312,13 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
         </div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <Button icon={<FaRegistered/>} style={buttonStyle}>MIGO/MIRO</Button>
-          <Button icon={<EyeOutlined />} style={buttonStyle}>Exibir XML</Button>
+          <Button 
+            icon={<EyeOutlined />} 
+            style={buttonStyle}
+            onClick={() => chaveAcesso && handleChaveAcessoClick(chaveAcesso)}
+          >
+            Exibir XML
+          </Button>
           <Button icon={<FileTextOutlined />} style={buttonStyle}>Exibir DANFE</Button>
         </div>
       </div>
@@ -404,6 +435,39 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
           </div>
         </div>
       </div>
+
+      {/* Modal de Detalhes da NF-e */}
+      <Modal
+        title="Detalhes da NF-e"
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        width={800}
+        footer={null}
+      >
+        {detalhesNFe && (
+          <div style={{ padding: '20px' }}>
+            <h4>Informações Gerais</h4>
+            <p><strong>Chave de Acesso:</strong> {detalhesNFe.nfeProc?.protNFe?.infProt?.chNFe}</p>
+            <p><strong>Número:</strong> {detalhesNFe.nfeProc?.NFe?.infNFe?.ide?.nNF}</p>
+            <p><strong>Série:</strong> {detalhesNFe.nfeProc?.NFe?.infNFe?.ide?.serie}</p>
+            <p><strong>Data Emissão:</strong> {detalhesNFe.nfeProc?.NFe?.infNFe?.ide?.dhEmi}</p>
+            
+            <h4 style={{ marginTop: '20px' }}>Emitente</h4>
+            <p><strong>CNPJ:</strong> {detalhesNFe.nfeProc?.NFe?.infNFe?.emit?.CNPJ}</p>
+            <p><strong>Nome:</strong> {detalhesNFe.nfeProc?.NFe?.infNFe?.emit?.xNome}</p>
+            <p><strong>Inscrição Estadual:</strong> {detalhesNFe.nfeProc?.NFe?.infNFe?.emit?.IE}</p>
+            
+            <h4 style={{ marginTop: '20px' }}>Destinatário</h4>
+            <p><strong>CNPJ:</strong> {detalhesNFe.nfeProc?.NFe?.infNFe?.dest?.CNPJ}</p>
+            <p><strong>Nome:</strong> {detalhesNFe.nfeProc?.NFe?.infNFe?.dest?.xNome}</p>
+            
+            <h4 style={{ marginTop: '20px' }}>Totais</h4>
+            <p><strong>Valor Total:</strong> R$ {detalhesNFe.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vNF}</p>
+            <p><strong>Base de Cálculo ICMS:</strong> R$ {detalhesNFe.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vBC}</p>
+            <p><strong>Valor ICMS:</strong> R$ {detalhesNFe.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vICMS}</p>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

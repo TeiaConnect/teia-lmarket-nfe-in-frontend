@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import FiltroNFeInbound from './FiltroNFeInbound';
 import TabelaNFeInbound from './TabelaNFeInbound';
 import DetalhesNFeInbound from './DetalhesNFeInbound';
-import { message, Button, Dropdown, Space, Cascader, Upload } from 'antd';
+import AtribuirItensPedido from './AtribuirItensPedido';
+import { message, Button, Dropdown, Space, Cascader, Upload, Table, Tabs, Modal } from 'antd';
 import { DownOutlined, FileTextOutlined, FileExcelOutlined, PrinterOutlined, ReloadOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, HistoryOutlined, SettingOutlined, UploadOutlined, PlayCircleTwoTone, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { FaBalanceScale, FaFileCode, FaFileInvoice, FaHistory, FaPlayCircle, FaUpload, FaTrash, FaSync } from 'react-icons/fa';
 import type { MenuProps } from 'antd';
@@ -12,6 +13,10 @@ import { FaRegistered } from 'react-icons/fa6';
 import { useRouter } from 'next/navigation';
 import { DataType } from './TabelaNFeInbound';
 import { NFeData } from '../types/NFeData';
+import TabIdentificacaoNFe from '../SegundaTela/TabIdentificacaoNFe/TabIdentificacaoNFe';
+import Emissor from '../SegundaTela/TabEmissor/Emissor';
+import type { ColumnsType } from 'antd/es/table';
+import type { TabsProps } from 'antd';
 
 const options = [
   {
@@ -110,6 +115,10 @@ export default function MonitorNFeInbound() {
   const [selectedChaveAcesso, setSelectedChaveAcesso] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [jsonData, setJsonData] = useState<NFeData | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedNFe, setSelectedNFe] = useState<any>(null);
+  const [showAtribuirItens, setShowAtribuirItens] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const uploadProps = {
     name: 'file',
@@ -212,7 +221,10 @@ export default function MonitorNFeInbound() {
             },
             emissor: {
               cnpj: nfe.emit.CNPJ || '',
-              codigo_uf: nfe.emit.enderEmit?.UF || ''
+              codigo_uf: nfe.emit.enderEmit?.UF || '',
+              status: protNFe.cStat || '',
+              ultima_atividade: doc.created_at || '',
+              status_atividade: protNFe.cStat || ''
             },
             destinatario: {
               cnpj: nfe.dest.CNPJ || ''
@@ -241,10 +253,7 @@ export default function MonitorNFeInbound() {
             codigo_tributacao: nfe.emit.CRT || '',
             inscricao_municipal: nfe.emit.IM || '',
             codigo_atividade: nfe.emit.CNAE || '',
-            codigo_status: protNFe.cStat || '',
             descricao_status: protNFe.xMotivo || '',
-            ultima_atividade: doc.created_at || '',
-            status_atividade: protNFe.cStat || ''
           };
         } catch (error) {
           console.error('Erro ao mapear documento:', error);
@@ -273,12 +282,26 @@ export default function MonitorNFeInbound() {
     }
   };
 
-  const handleChaveAcessoClick = (chaveAcesso: string) => {
-    setSelectedChaveAcesso(Number(chaveAcesso));
+  const handleChaveAcessoClick = async (chaveAcesso: string) => {
+    try {
+      const response = await fetch(`/api/nfe/inbound?chNFe=${chaveAcesso}`);
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        setSelectedNFe(data[0]);
+        setShowDetails(true);
+      } else {
+        message.error('Nota fiscal não encontrada');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar detalhes da NF-e:', error);
+      message.error('Erro ao carregar os detalhes da nota fiscal');
+    }
   };
 
   const handleVoltar = () => {
-    setSelectedChaveAcesso(null);
+    setShowDetails(false);
+    setSelectedNFe(null);
   };
 
   useEffect(() => {
@@ -299,20 +322,138 @@ export default function MonitorNFeInbound() {
       message.error('Selecione uma NF-e para atribuir itens do pedido');
       return;
     }
-    router.push(`/MonitorNfe/PrimeiraTela/AtribuirItensPedido?chaveAcesso=${chaveAcesso}`);
+    setShowAtribuirItens(true);
   };
 
-  if (selectedChaveAcesso) {
-    return <DetalhesNFeInbound 
-      chaveAcesso={selectedChaveAcesso} 
-      onVoltar={handleVoltar} 
-      jsonData={jsonData}
-      jsonDataDestinatario={jsonData}
-      jsonDataEmissor={jsonData}
-      jsonDataEventos={jsonData}
-      jsonDataItens={jsonData}
-    />;
+  const handleVoltarAtribuirItens = () => {
+    setShowAtribuirItens(false);
+  };
+
+  const handleExcluirXML = async () => {
+    if (!selectedRow?.chave_acesso) {
+      message.error('Selecione uma NF-e para excluir');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/nfe/inbound/${selectedRow.chave_acesso}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao excluir NF-e');
+      }
+
+      message.success('NF-e excluída com sucesso');
+      handleFiltroSubmit({}); // Recarrega a tabela
+      setSelectedRow(null);
+    } catch (error) {
+      console.error('Erro ao excluir NF-e:', error);
+      message.error(error instanceof Error ? error.message : 'Erro ao excluir NF-e. Por favor, tente novamente.');
+    }
+  };
+
+  const showDeleteConfirm = () => {
+    if (!selectedRow?.chave_acesso) {
+      message.error('Selecione uma NF-e para excluir');
+      return;
+    }
+
+    Modal.confirm({
+      title: 'Confirmar Exclusão',
+      content: 'Tem certeza que deseja excluir esta NF-e? Esta ação não pode ser desfeita.',
+      okText: 'Sim',
+      okType: 'danger',
+      cancelText: 'Não',
+      onOk: handleExcluirXML,
+    });
+  };
+
+  if (showDetails && selectedNFe) {
+    const nfe = selectedNFe?.nfeProc?.NFe?.infNFe;
+    const protNFe = selectedNFe?.nfeProc?.protNFe?.infProt;
+
+    if (!nfe || !protNFe) {
+      return <div>Dados da NF-e não encontrados</div>;
+    }
+
+    const items: TabsProps['items'] = [
+      {
+        key: '1',
+        label: 'Identificação NF-e',
+        children: <TabIdentificacaoNFe nfeData={selectedNFe} />,
+      },
+      {
+        key: '2',
+        label: 'Emissor',
+        children: (
+          <Emissor 
+            status={protNFe.cStat || ''}
+            ultimaAtividade={selectedNFe.created_at || ''}
+            statusAtividade={protNFe.cStat || ''}
+            codigoStatus={protNFe.cStat || ''}
+            descricaoStatus={protNFe.xMotivo || ''}
+            codigoMensagem={protNFe.cStat || ''}
+            mensagemSefaz={protNFe.xMotivo || ''}
+            cnpj={nfe.emit.CNPJ || ''}
+            ie={nfe.emit.IE || ''}
+            nomeEmissor={nfe.emit.xNome || ''}
+            nomeEmpresa={nfe.emit.xNome || ''}
+            nomeComercio={nfe.emit.xFant || ''}
+            rua={nfe.emit.enderEmit?.xLgr || ''}
+            complementoEndereco={nfe.emit.enderEmit?.xCpl || ''}
+            bairro={nfe.emit.enderEmit?.xBairro || ''}
+            numeroEndereco={nfe.emit.enderEmit?.nro || ''}
+            codigoPostal={nfe.emit.enderEmit?.CEP || ''}
+            codigoCidade={nfe.emit.enderEmit?.cMun || ''}
+            nomeCidade={nfe.emit.enderEmit?.xMun || ''}
+            uf={nfe.emit.enderEmit?.UF || ''}
+            chavePais={nfe.emit.enderEmit?.cPais || ''}
+            nomePais={nfe.emit.enderEmit?.xPais || ''}
+            telefone={nfe.emit.enderEmit?.fone || ''}
+            codTributacao={nfe.emit.CRT || ''}
+            inscricaoMunicipal={nfe.emit.IM || ''}
+            codAtividade={nfe.emit.CNAE || ''}
+          />
+        ),
+      },
+    ];
+
+    return (
+      <div>
+        <Button type="link" onClick={handleVoltar} style={{ marginBottom: 16 }}>
+          Voltar
+        </Button>
+        <Tabs defaultActiveKey="1" items={items} />
+      </div>
+    );
   }
+
+  if (showAtribuirItens && selectedRow) {
+    return (
+      <div>
+        <Button type="link" onClick={handleVoltarAtribuirItens} style={{ marginBottom: 16 }}>
+          Voltar
+        </Button>
+        <AtribuirItensPedido chaveAcesso={selectedRow.chave_acesso} />
+      </div>
+    );
+  }
+
+  const columns: ColumnsType<DataType> = [
+    {
+      title: 'Chave de Acesso',
+      dataIndex: 'chave_acesso',
+      key: 'chave_acesso',
+      render: (text: string) => (
+        <Button type="link" onClick={() => handleChaveAcessoClick(text)}>
+          {text}
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <div className="monitor-nfe-container" style={{ 
@@ -370,7 +511,15 @@ export default function MonitorNFeInbound() {
           >
             <Button icon={<FaUpload/>} style={buttonStyle} title="Incluir XML">Incluir XML</Button>
           </Upload>
-          <Button icon={<FaTrash/>} style={buttonStyle} title="Excluir XML">Excluir XML</Button>
+          <Button 
+            icon={<FaTrash/>} 
+            style={buttonStyle} 
+            title="Excluir XML"
+            onClick={showDeleteConfirm}
+            disabled={!selectedRow}
+          >
+            Excluir XML
+          </Button>
         </div>
 
         <div style={buttonGroupStyle}>
@@ -398,6 +547,7 @@ export default function MonitorNFeInbound() {
           onSelectChange={setSelectedRow}
           onChaveAcessoClick={handleChaveAcessoClick}
           jsonData={jsonData?.notas_fiscais || []}
+          columns={columns}
         />
       </div>
     </div>

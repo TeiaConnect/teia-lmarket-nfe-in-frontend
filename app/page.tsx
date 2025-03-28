@@ -194,6 +194,7 @@ const App: React.FC = () => {
               padding: 24,
               margin: 0,
               background: "#ffffff",
+              scale: 1
             }}
           >
             <GetJson></GetJson>

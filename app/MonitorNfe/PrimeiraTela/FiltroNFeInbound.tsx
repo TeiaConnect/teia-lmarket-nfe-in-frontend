@@ -40,7 +40,7 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
         form={form}
         name="nest-messages"
         onFinish={onFinish}
-        style={{maxHeight: '20vh', maxWidth: '90%', display: 'flex', flexDirection: 'column', flexWrap: 'wrap', alignContent: 'space-around', alignItems: 'stretch'}}
+        style={{maxHeight: '20vh', maxWidth: '80%', display: 'flex', flexDirection: 'column', flexWrap: 'wrap', alignContent: 'space-around', alignItems: 'stretch'}}
         labelAlign="right"
         size="small"
       >
