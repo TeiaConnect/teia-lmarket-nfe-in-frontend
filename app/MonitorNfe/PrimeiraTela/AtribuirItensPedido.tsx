@@ -1,39 +1,46 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Space, message, Dropdown, Modal } from 'antd';
+import { Button, Table, Space, message, Dropdown, Modal, Tabs } from 'antd';
 import { EyeOutlined, FileTextOutlined, DownOutlined } from '@ant-design/icons';
 import { FaFileCode, FaFileInvoice, FaCheck, FaTimes, FaSync, FaPlayCircle, FaBalanceScale, FaRegistered, FaSearch } from 'react-icons/fa';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
+import './AtribuirItensPedido.css';
 
 interface ItemNFe {
   key: string;
-  codigo: string;
-  descricao: string;
+  numero: string;
+  categoria: string;
   quantidade: number;
-  valorUnitario: number;
-  valorTotal: number;
+  unidade: string;
+  codigoMaterial: string;
+  descricao: string;
 }
 
 interface ItemPedido {
   key: string;
-  codigo: string;
-  descricao: string;
-  quantidade: number;
-  valorUnitario: number;
-  valorTotal: number;
+  numeroPedido: string;
+  itemPedido: string;
+  codigoMaterialERP: string;
+  descricaoMaterialERP: string;
+  quantidadePedido: number;
+  unidadeMedidaERP: string;
 }
 
 interface ItemAtribuido {
   key: string;
-  codigoNFe: string;
-  descricaoNFe: string;
+  categoria: string;
   quantidadeNFe: number;
-  codigoPedido: string;
-  descricaoPedido: string;
-  quantidadePedido: number;
-  status: string;
+  unidadeMedida: string;
+  codigoMaterialNFe: string;
+  descricaoProduto: string;
+  numeroPedido: string;
+  itemPedido: string;
+  quantidadeConvertida: number;
+  unidadeMedidaERP: string;
+  codigoMaterialERP: string;
+  descricaoMaterialERP: string;
 }
 
 export interface AtribuirItensPedidoProps {
@@ -74,11 +81,12 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
 
               const itensFormatados: ItemNFe[] = itens.map((item: any, index: number) => ({
                 key: String(index + 1),
-                codigo: item.prod.cProd || '',
-                descricao: item.prod.xProd || '',
+                numero: item.prod.cProd || '',
+                categoria: item.prod.xProd || '',
                 quantidade: Number(item.prod.qCom) || 0,
-                valorUnitario: Number(item.prod.vUnCom) || 0,
-                valorTotal: Number(item.prod.vProd) || 0
+                unidade: item.prod.uCom || '',
+                codigoMaterial: item.prod.cProd || '',
+                descricao: item.prod.xProd || ''
               }));
 
               console.log('Itens formatados:', itensFormatados);
@@ -104,111 +112,155 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
   // Colunas para a tabela de Itens da NF-e
   const colunasNFe: ColumnsType<ItemNFe> = [
     {
-      title: 'Código',
-      dataIndex: 'codigo',
-      key: 'codigo',
-      width: 100,
+      title: 'Nº do item',
+      dataIndex: 'numero',
+      key: 'numero',
+      width: 80,
     },
     {
-      title: 'Descrição',
-      dataIndex: 'descricao',
-      key: 'descricao',
+      title: 'Categoria do item',
+      dataIndex: 'categoria',
+      key: 'categoria',
+      width: 120,
     },
     {
       title: 'Quantidade',
       dataIndex: 'quantidade',
       key: 'quantidade',
       width: 100,
+      align: 'right',
     },
     {
-      title: 'Valor Unitário',
-      dataIndex: 'valorUnitario',
-      key: 'valorUnitario',
+      title: 'Unidade',
+      dataIndex: 'unidade',
+      key: 'unidade',
+      width: 80,
+    },
+    {
+      title: 'Nº de material',
+      dataIndex: 'codigoMaterial',
+      key: 'codigoMaterial',
       width: 120,
     },
     {
-      title: 'Valor Total',
-      dataIndex: 'valorTotal',
-      key: 'valorTotal',
-      width: 120,
-    },
+      title: 'Descrição',
+      dataIndex: 'descricao',
+      key: 'descricao',
+      width: 300,
+    }
   ];
 
   // Colunas para a tabela de Itens do Pedido
   const colunasPedido: ColumnsType<ItemPedido> = [
     {
-      title: 'Código',
-      dataIndex: 'codigo',
-      key: 'codigo',
-      width: 100,
-    },
-    {
-      title: 'Descrição',
-      dataIndex: 'descricao',
-      key: 'descricao',
-    },
-    {
-      title: 'Quantidade',
-      dataIndex: 'quantidade',
-      key: 'quantidade',
-      width: 100,
-    },
-    {
-      title: 'Valor Unitário',
-      dataIndex: 'valorUnitario',
-      key: 'valorUnitario',
+      title: 'Nº do pedido',
+      dataIndex: 'numeroPedido',
+      key: 'numeroPedido',
       width: 120,
     },
     {
-      title: 'Valor Total',
-      dataIndex: 'valorTotal',
-      key: 'valorTotal',
-      width: 120,
+      title: 'Item do pedido',
+      dataIndex: 'itemPedido',
+      key: 'itemPedido',
+      width: 100,
     },
+    {
+      title: 'ERP nº de material',
+      dataIndex: 'codigoMaterialERP',
+      key: 'codigoMaterialERP',
+      width: 150,
+    },
+    {
+      title: 'ERP texto breve material',
+      dataIndex: 'descricaoMaterialERP',
+      key: 'descricaoMaterialERP',
+      width: 300,
+    },
+    {
+      title: 'Quantidade do pedido',
+      dataIndex: 'quantidadePedido',
+      key: 'quantidadePedido',
+      width: 140,
+      align: 'right',
+    },
+    {
+      title: 'ERP unidade de medida',
+      dataIndex: 'unidadeMedidaERP',
+      key: 'unidadeMedidaERP',
+      width: 150,
+    }
   ];
 
   // Colunas para a tabela de Itens Atribuídos
   const colunasAtribuidos: ColumnsType<ItemAtribuido> = [
     {
-      title: 'Código NF-e',
-      dataIndex: 'codigoNFe',
-      key: 'codigoNFe',
-      width: 100,
+      title: 'Categoria do item',
+      dataIndex: 'categoria',
+      key: 'categoria',
+      width: 120,
     },
     {
-      title: 'Descrição NF-e',
-      dataIndex: 'descricaoNFe',
-      key: 'descricaoNFe',
-    },
-    {
-      title: 'Qtd NF-e',
+      title: 'Quantidade NF-e',
       dataIndex: 'quantidadeNFe',
       key: 'quantidadeNFe',
-      width: 80,
+      width: 120,
+      align: 'right',
     },
     {
-      title: 'Código Pedido',
-      dataIndex: 'codigoPedido',
-      key: 'codigoPedido',
+      title: 'Unidade de medida',
+      dataIndex: 'unidadeMedida',
+      key: 'unidadeMedida',
+      width: 130,
+    },
+    {
+      title: 'Nº de material NF-e',
+      dataIndex: 'codigoMaterialNFe',
+      key: 'codigoMaterialNFe',
+      width: 140,
+    },
+    {
+      title: 'Descrição do produto',
+      dataIndex: 'descricaoProduto',
+      key: 'descricaoProduto',
+      width: 300,
+    },
+    {
+      title: 'Nº do pedido',
+      dataIndex: 'numeroPedido',
+      key: 'numeroPedido',
+      width: 120,
+    },
+    {
+      title: 'Item do pedido',
+      dataIndex: 'itemPedido',
+      key: 'itemPedido',
       width: 100,
     },
     {
-      title: 'Descrição Pedido',
-      dataIndex: 'descricaoPedido',
-      key: 'descricaoPedido',
+      title: 'Qtd.NF-e convertida',
+      dataIndex: 'quantidadeConvertida',
+      key: 'quantidadeConvertida',
+      width: 140,
+      align: 'right',
     },
     {
-      title: 'Qtd Pedido',
-      dataIndex: 'quantidadePedido',
-      key: 'quantidadePedido',
-      width: 80,
+      title: 'ERP unidade de medida',
+      dataIndex: 'unidadeMedidaERP',
+      key: 'unidadeMedidaERP',
+      width: 150,
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
+      title: 'ERP nº de material',
+      dataIndex: 'codigoMaterialERP',
+      key: 'codigoMaterialERP',
+      width: 140,
     },
+    {
+      title: 'ERP texto breve do material',
+      dataIndex: 'descricaoMaterialERP',
+      key: 'descricaoMaterialERP',
+      width: 300,
+    }
   ];
 
   // Estilo comum para os botões
@@ -285,152 +337,258 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
   return (
     <div style={{ 
       width: '100%',
-      padding: '20px',
-      backgroundColor: '#ffffff',
+      height: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      gap: '20px',
-      overflow: 'hidden'
+      backgroundColor: '#f0f0f0',
+      padding: '0',
+      margin: '0'
     }}>
-      {/* Cabeçalho com botões */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        padding: '10px',
-        backgroundColor: '#f5f5f5',
-        borderRadius: '4px',
-        border: '1px solid #e8e8e8',
-        flexWrap: 'wrap',
-        gap: '10px'
+      {/* Barra de botões superior */}
+      <div style={{
+        padding: '4px 8px',
+        backgroundColor: '#fff',
+        borderBottom: '1px solid #ccc',
+        display: 'flex',
+        gap: '4px',
+        justifyContent: 'space-between'
       }}>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <Button icon={<FaPlayCircle/>} style={buttonStyle}>Continuar Processo</Button>
-          <Button icon={<FaFileCode />} style={buttonStyle}>Simular XML</Button>
-          <Button icon={<FaFileInvoice />} style={buttonStyle}>Simular Fatura</Button>
-          <Button icon={<FaBalanceScale/>} style={buttonStyle}>Contagem</Button>
-        </div>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <Button icon={<FaRegistered/>} style={buttonStyle}>MIGO/MIRO</Button>
+        <div style={{ display: 'flex', gap: '4px' }}>
           <Button 
-            icon={<EyeOutlined />} 
-            style={buttonStyle}
-            onClick={() => chaveAcesso && handleChaveAcessoClick(chaveAcesso)}
+            size="small"
+            icon={<FaCheck style={{ fontSize: '11px' }} />}
+            className="sap-button"
           >
-            Exibir XML
+            Gravar atribuições
           </Button>
-          <Button icon={<FileTextOutlined />} style={buttonStyle}>Exibir DANFE</Button>
+          <Button 
+            size="small"
+            icon={<FaSync style={{ fontSize: '11px' }} />}
+            className="sap-button"
+          >
+            Reinicializar
+          </Button>
+        </div>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <Button 
+            size="small"
+            icon={<FaFileCode style={{ fontSize: '11px' }} />}
+            className="sap-button"
+          >
+            Simular XML
+          </Button>
+          <Button 
+            size="small"
+            icon={<FaFileInvoice style={{ fontSize: '11px' }} />}
+            className="sap-button"
+          >
+            Simular Fatura
+          </Button>
+          <Button 
+            size="small"
+            icon={<FaBalanceScale style={{ fontSize: '11px' }} />}
+            className="sap-button"
+          >
+            Contagem
+          </Button>
         </div>
       </div>
 
-      {/* Container principal com as tabelas */}
+      {/* Cabeçalho com informações da NF */}
+      <div className="sap-header">
+        <div className="sap-header-row">
+          <div>
+            <span className="sap-header-label">CNPJ do emissor da NF-e: </span>
+            <span className="sap-header-value">{detalhesNFe?.nfeProc?.NFe?.infNFe?.emit?.CNPJ}</span>
+          </div>
+          <div>
+            <span className="sap-header-label">Nome do emissor da NF-e: </span>
+            <span className="sap-header-value">{detalhesNFe?.nfeProc?.NFe?.infNFe?.emit?.xNome}</span>
+          </div>
+        </div>
+        <div className="sap-header-row">
+          <div>
+            <span className="sap-header-label">CNPJ/CPF do destinatário da NF-e: </span>
+            <span className="sap-header-value">{detalhesNFe?.nfeProc?.NFe?.infNFe?.dest?.CNPJ}</span>
+          </div>
+          <div>
+            <span className="sap-header-label">Nome do destinatário NF-e: </span>
+            <span className="sap-header-value">{detalhesNFe?.nfeProc?.NFe?.infNFe?.dest?.xNome}</span>
+          </div>
+        </div>
+        <div className="sap-header-row">
+          <div>
+            <span className="sap-header-label">Valor total inclusive impostos: </span>
+            <span className="sap-header-value">
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vNF) || 0)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Barra de ferramentas com tabs */}
+      <div style={{
+        padding: '0 8px',
+        backgroundColor: '#fff',
+        borderBottom: '1px solid #ccc',
+        display: 'flex',
+        gap: '1px'
+      }}>
+        <Tabs
+          type="card"
+          items={[
+            { label: 'Pesquisa baseada no item', key: '1' },
+            { label: 'Pesquisa global', key: '2' }
+          ]}
+          style={{
+            marginBottom: 0
+          }}
+          className="atribuir-itens-tabs"
+        />
+      </div>
+
+      {/* Container principal */}
       <div style={{ 
-        display: 'flex', 
+        flex: 1,
+        display: 'flex',
         flexDirection: 'column',
-        gap: '20px',
-        width: '100%',
-        overflow: 'hidden'
+        gap: '1px',
+        backgroundColor: '#f0f0f0',
+        overflow: 'hidden',
+        minHeight: 0,
+        position: 'relative'
       }}>
         {/* Container das tabelas lado a lado */}
         <div style={{ 
           display: 'flex',
-          gap: '20px',
-          width: '100%'
+          gap: '1px',
+          flex: 1,
+          minHeight: 0
         }}>
-          {/* Tabela de Itens da NF-e */}
+          {/* Tabela de Itens NF-e pendentes */}
           <div style={{ 
-            flex: 1,
+            flex: '0 0 50%',
             backgroundColor: '#fff',
-            padding: '15px',
-            borderRadius: '4px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            overflow: 'hidden',
-            height: '400px'
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            maxWidth: '50%'
           }}>
-            <h3 style={{ marginBottom: '15px', color: '#333' }}>Itens da NF-e</h3>
-            <div style={{ overflowX: 'auto', height: 'calc(100% - 40px)' }}>
+            <div className="sap-section-title">
+              <span>Itens NF-e pendentes</span>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px' }}>
+                <Button 
+                  size="small"
+                  icon={<FaRegistered style={{ fontSize: '11px' }} />}
+                  className="sap-button-compact"
+                >
+                  MIGO/MIRO
+                </Button>
+                <Button 
+                  size="small"
+                  icon={<EyeOutlined style={{ fontSize: '11px' }} />}
+                  className="sap-button-compact"
+                  onClick={() => chaveAcesso && handleChaveAcessoClick(chaveAcesso)}
+                >
+                  Exibir XML
+                </Button>
+                <Button 
+                  size="small"
+                  icon={<FileTextOutlined style={{ fontSize: '11px' }} />}
+                  className="sap-button-compact"
+                >
+                  Exibir DANFE
+                </Button>
+              </div>
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
               <Table
                 columns={colunasNFe}
                 dataSource={itensNFe}
                 size="small"
                 pagination={false}
-                scroll={{ x: 'max-content', y: 'calc(100% - 40px)' }}
-                style={{ 
-                  fontSize: '12px',
-                  width: '100%'
+                scroll={{ y: 'calc(100% - 8px)', x: 'max-content' }}
+                rowSelection={{
+                  type: 'radio',
+                  onChange: (selectedRowKeys, selectedRows) => {
+                    console.log('selectedRowKeys:', selectedRowKeys);
+                    console.log('selectedRows:', selectedRows);
+                  }
                 }}
+                className="atribuir-itens-table"
               />
             </div>
           </div>
 
-          {/* Tabela de Itens do Pedido */}
+          {/* Tabela de Itens do pedido disponíveis */}
           <div style={{ 
-            flex: 1,
+            flex: '0 0 50%',
             backgroundColor: '#fff',
-            padding: '15px',
-            borderRadius: '4px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            overflow: 'hidden',
-            height: '400px'
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            maxWidth: '50%'
           }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              marginBottom: '15px' 
-            }}>
-              <h3 style={{ color: '#333', margin: 0 }}>Itens do Pedido</h3>
+            <div className="sap-section-title" style={{ justifyContent: 'space-between' }}>
+              <span>Itens do pedido disponíveis</span>
               <Dropdown menu={{ items }} placement="bottomRight">
                 <Button 
-                  icon={<FaSearch />} 
-                  style={{
-                    ...buttonStyle,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
+                  size="small"
+                  icon={<FaSearch style={{ fontSize: '11px' }} />}
+                  className="sap-dropdown-button"
                 >
-                  Procurar itens de Pedido <DownOutlined />
+                  Procurar itens de Pedido <DownOutlined style={{ fontSize: '10px', marginLeft: '4px' }} />
                 </Button>
               </Dropdown>
             </div>
-            <div style={{ overflowX: 'auto', height: 'calc(100% - 40px)' }}>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
               <Table
                 columns={colunasPedido}
                 dataSource={itensPedido}
                 size="small"
                 pagination={false}
-                scroll={{ x: 'max-content', y: 'calc(100% - 40px)' }}
-                style={{ 
-                  fontSize: '12px',
-                  width: '100%'
+                scroll={{ y: 'calc(100% - 8px)', x: 'max-content' }}
+                rowSelection={{
+                  type: 'radio',
+                  onChange: (selectedRowKeys, selectedRows) => {
+                    console.log('selectedRowKeys:', selectedRowKeys);
+                    console.log('selectedRows:', selectedRows);
+                  }
                 }}
+                className="atribuir-itens-table"
               />
             </div>
           </div>
         </div>
 
-        {/* Tabela de Itens Atribuídos */}
+        {/* Tabela de Itens NF-e atribuídos */}
         <div style={{ 
           backgroundColor: '#fff',
-          padding: '15px',
-          borderRadius: '4px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          overflow: 'hidden',
-          height: '300px'
+          display: 'flex',
+          flexDirection: 'column',
+          height: '35%',
+          minHeight: '200px',
+          maxHeight: '400px',
+          position: 'relative'
         }}>
-          <h3 style={{ marginBottom: '15px', color: '#333' }}>Itens Atribuídos</h3>
-          <div style={{ overflowX: 'auto', height: 'calc(100% - 40px)' }}>
+          <div className="sap-section-title" style={{ justifyContent: 'space-between' }}>
+            <span>Itens NF-e atribuídos</span>
+            <Button 
+              size="small"
+              icon={<FaTimes style={{ fontSize: '11px' }} />}
+              className="sap-button"
+            >
+              Anular atribuição
+            </Button>
+          </div>
+          <div style={{ flex: 1, overflow: 'hidden' }}>
             <Table
               columns={colunasAtribuidos}
               dataSource={itensAtribuidos}
               size="small"
               pagination={false}
-              scroll={{ x: 'max-content', y: 'calc(100% - 40px)' }}
-              style={{ 
-                fontSize: '12px',
-                width: '100%'
-              }}
+              scroll={{ y: 'calc(100% - 8px)', x: 'max-content' }}
+              className="atribuir-itens-table"
             />
           </div>
         </div>
