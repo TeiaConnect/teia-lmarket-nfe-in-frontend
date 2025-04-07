@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Table, Space, message, Dropdown, Modal, Tabs } from 'antd';
-import { EyeOutlined, FileTextOutlined, DownOutlined } from '@ant-design/icons';
-import { FaFileCode, FaFileInvoice, FaCheck, FaTimes, FaSync, FaPlayCircle, FaBalanceScale, FaRegistered, FaSearch } from 'react-icons/fa';
+import { EyeOutlined, FileTextOutlined, DownOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { FaFileCode, FaFileInvoice, FaCheck, FaTimes, FaSync, FaPlayCircle, FaBalanceScale, FaRegistered, FaSearch, FaFilter, FaCog } from 'react-icons/fa';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import './AtribuirItensPedido.css';
@@ -48,14 +48,15 @@ export interface AtribuirItensPedidoProps {
 }
 
 const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }) => {
-  // Estado para os dados das tabelas
+  const [activeTab, setActiveTab] = useState('1');
+  const [modalActiveTab, setModalActiveTab] = useState('1');
   const [itensNFe, setItensNFe] = useState<ItemNFe[]>([]);
   const [itensPedido, setItensPedido] = useState<ItemPedido[]>([]);
   const [itensAtribuidos, setItensAtribuidos] = useState<ItemAtribuido[]>([]);
   const [detalhesNFe, setDetalhesNFe] = useState<any>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSimulacaoXmlVisible, setIsSimulacaoXmlVisible] = useState(false);
 
-  // Carregar dados da NF-e quando a chave de acesso for fornecida
   useEffect(() => {
     if (chaveAcesso) {
       const carregarDadosNFe = async () => {
@@ -67,7 +68,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
           console.log('Dados recebidos:', data);
           
           if (data && data.length > 0) {
-            // Procura a NF-e pela chave de acesso no protNFe
             const nfe = data.find((item: any) => 
               item.nfeProc?.protNFe?.infProt?.chNFe === chaveAcesso
             );
@@ -109,7 +109,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     }
   }, [chaveAcesso]);
 
-  // Colunas para a tabela de Itens da NF-e
   const colunasNFe: ColumnsType<ItemNFe> = [
     {
       title: 'Nº do item',
@@ -150,7 +149,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     }
   ];
 
-  // Colunas para a tabela de Itens do Pedido
   const colunasPedido: ColumnsType<ItemPedido> = [
     {
       title: 'Nº do pedido',
@@ -191,7 +189,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     }
   ];
 
-  // Colunas para a tabela de Itens Atribuídos
   const colunasAtribuidos: ColumnsType<ItemAtribuido> = [
     {
       title: 'Categoria do item',
@@ -263,7 +260,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     }
   ];
 
-  // Estilo comum para os botões
   const buttonStyle = {
     color: '#6e99cc',
     backgroundColor: '#F8F7FF',
@@ -282,7 +278,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     }
   };
 
-  // Estilo para os grupos de botões
   const buttonGroupStyle = {
     display: 'flex',
     gap: '0',
@@ -334,6 +329,136 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     }
   };
 
+  const handleSimularXml = () => {
+    setIsSimulacaoXmlVisible(true);
+  };
+
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+  };
+
+  const handleModalTabChange = (key: string) => {
+    setModalActiveTab(key);
+  };
+
+  const ValoresContent = () => (
+    <div className="sap-values-section">
+      <div className="sap-values-row">
+        <div className="sap-values-field">
+          <span className="sap-values-label">Valor Total:</span>
+          <span className="sap-values-value">R$ 1.234,56</span>
+        </div>
+        <div className="sap-values-field">
+          <span className="sap-values-label">Base ICMS:</span>
+          <span className="sap-values-value">R$ 1.000,00</span>
+        </div>
+        <div className="sap-values-field">
+          <span className="sap-values-label">Valor ICMS:</span>
+          <span className="sap-values-value">R$ 180,00</span>
+        </div>
+      </div>
+      <div className="sap-values-row">
+        <div className="sap-values-field">
+          <span className="sap-values-label">Valor Produtos:</span>
+          <span className="sap-values-value">R$ 1.200,00</span>
+        </div>
+        <div className="sap-values-field">
+          <span className="sap-values-label">Valor Frete:</span>
+          <span className="sap-values-value">R$ 34,56</span>
+        </div>
+        <div className="sap-values-field">
+          <span className="sap-values-label">Valor Seguro:</span>
+          <span className="sap-values-value">R$ 0,00</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const ImpostosContent = () => (
+    <div className="sap-taxes-section">
+      <div className="sap-taxes-row">
+        <div className="sap-taxes-field">
+          <span className="sap-taxes-label">ICMS:</span>
+          <span className="sap-taxes-value">18%</span>
+        </div>
+        <div className="sap-taxes-field">
+          <span className="sap-taxes-label">IPI:</span>
+          <span className="sap-taxes-value">5%</span>
+        </div>
+        <div className="sap-taxes-field">
+          <span className="sap-taxes-label">PIS:</span>
+          <span className="sap-taxes-value">1,65%</span>
+        </div>
+        <div className="sap-taxes-field">
+          <span className="sap-taxes-label">COFINS:</span>
+          <span className="sap-taxes-value">7,6%</span>
+        </div>
+      </div>
+      <div className="sap-taxes-row">
+        <div className="sap-taxes-field">
+          <span className="sap-taxes-label">CST ICMS:</span>
+          <span className="sap-taxes-value">00</span>
+        </div>
+        <div className="sap-taxes-field">
+          <span className="sap-taxes-label">CST IPI:</span>
+          <span className="sap-taxes-value">50</span>
+        </div>
+        <div className="sap-taxes-field">
+          <span className="sap-taxes-label">CST PIS:</span>
+          <span className="sap-taxes-value">01</span>
+        </div>
+        <div className="sap-taxes-field">
+          <span className="sap-taxes-label">CST COFINS:</span>
+          <span className="sap-taxes-value">01</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const tableProps = {
+    dataSource: [],
+    columns: [],
+    pagination: false as const,
+    scroll: { y: 'calc(100% - 8px)', x: 'max-content' },
+    size: 'small' as const
+  };
+
+  const mainTabItems = [
+    {
+      label: 'Itens',
+      key: '1',
+      children: <Table {...tableProps} />
+    },
+    {
+      label: 'Valores totais',
+      key: '2',
+      children: <ValoresContent />
+    },
+    {
+      label: 'Valores',
+      key: '3',
+      children: <ValoresContent />
+    },
+    {
+      label: 'Impostos',
+      key: '4',
+      children: <ImpostosContent />
+    }
+  ];
+
+  const modalTabItems = [
+    {
+      label: 'Valores',
+      key: '1',
+      children: <ValoresContent />
+    },
+    {
+      label: 'Impostos',
+      key: '2',
+      children: <ImpostosContent />
+    }
+  ];
+
   return (
     <div style={{ 
       width: '100%',
@@ -344,7 +469,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
       padding: '0',
       margin: '0'
     }}>
-      {/* Barra de botões superior */}
       <div style={{
         padding: '4px 8px',
         backgroundColor: '#fff',
@@ -374,6 +498,7 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             size="small"
             icon={<FaFileCode style={{ fontSize: '11px' }} />}
             className="sap-button"
+            onClick={handleSimularXml}
           >
             Simular XML
           </Button>
@@ -394,7 +519,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
         </div>
       </div>
 
-      {/* Cabeçalho com informações da NF */}
       <div className="sap-header">
         <div className="sap-header-row">
           <div>
@@ -426,7 +550,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
         </div>
       </div>
 
-      {/* Barra de ferramentas com tabs */}
       <div style={{
         padding: '0 8px',
         backgroundColor: '#fff',
@@ -444,10 +567,12 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             marginBottom: 0
           }}
           className="atribuir-itens-tabs"
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          destroyInactiveTabPane
         />
       </div>
 
-      {/* Container principal */}
       <div style={{ 
         flex: 1,
         display: 'flex',
@@ -458,14 +583,12 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
         minHeight: 0,
         position: 'relative'
       }}>
-        {/* Container das tabelas lado a lado */}
         <div style={{ 
           display: 'flex',
           gap: '1px',
           flex: 1,
           minHeight: 0
         }}>
-          {/* Tabela de Itens NF-e pendentes */}
           <div style={{ 
             flex: '0 0 50%',
             backgroundColor: '#fff',
@@ -520,7 +643,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             </div>
           </div>
 
-          {/* Tabela de Itens do pedido disponíveis */}
           <div style={{ 
             flex: '0 0 50%',
             backgroundColor: '#fff',
@@ -561,7 +683,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
           </div>
         </div>
 
-        {/* Tabela de Itens NF-e atribuídos */}
         <div style={{ 
           backgroundColor: '#fff',
           display: 'flex',
@@ -594,7 +715,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
         </div>
       </div>
 
-      {/* Modal de Detalhes da NF-e */}
       <Modal
         title="Detalhes da NF-e"
         open={isModalVisible}
@@ -625,6 +745,220 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             <p><strong>Valor ICMS:</strong> R$ {detalhesNFe.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vICMS}</p>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        title={
+          <div className="sap-modal-title">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontFamily: 'Arial', fontWeight: 'normal' }}>
+                Simular itens do pedido: 33110811663724000131550010000200501271045599
+              </span>
+              <Button 
+                size="small" 
+                className="sap-help-button"
+              >
+                Ajuda
+              </Button>
+            </div>
+          </div>
+        }
+        open={isSimulacaoXmlVisible}
+        onCancel={() => setIsSimulacaoXmlVisible(false)}
+        width={1200}
+        className="sap-simulacao-modal"
+        footer={
+          <div className="sap-modal-footer">
+            <div className="sap-button-group">
+              <Button 
+                size="small" 
+                className="sap-button" 
+                icon={<FaSync style={{ fontSize: '11px' }} />}
+              >
+                Voltar
+              </Button>
+              <Button 
+                size="small" 
+                className="sap-button" 
+                icon={<FaSync style={{ fontSize: '11px' }} />}
+              >
+                Voltar para síntese
+              </Button>
+              <Button 
+                size="small" 
+                className="sap-button" 
+                icon={<FaCheck style={{ fontSize: '11px' }} />}
+              >
+                Gravar parâmetros
+              </Button>
+              <Button 
+                size="small" 
+                className="sap-button" 
+                icon={<FaPlayCircle style={{ fontSize: '11px' }} />}
+              >
+                Executar simulação
+              </Button>
+            </div>
+          </div>
+        }
+      >
+        <div className="sap-simulacao-content">
+          <div className="sap-info-section">
+            <div className="sap-info-row">
+              <div className="sap-info-field">
+                <span className="sap-info-label">Ctn proc.:</span>
+                <span className="sap-info-value">NF-e para pedido normal</span>
+              </div>
+            </div>
+            <div className="sap-info-row">
+              <div className="sap-info-field">
+                <span className="sap-info-label">Nº CNPJ do emissor da NF-e:</span>
+                <span className="sap-info-value">11663724000131</span>
+              </div>
+              <div className="sap-info-field">
+                <span className="sap-info-label">Nome do emissor da NF-e:</span>
+                <span className="sap-info-value">Consorcio Techint-Andrade Gutierrez (TE-AG)</span>
+              </div>
+              <div className="sap-info-field">
+                <span className="sap-info-label">Nº CNPJ/CPF do recebedor da NF-e:</span>
+                <span className="sap-info-value">99999999000191</span>
+              </div>
+            </div>
+            <div className="sap-info-row">
+              <div className="sap-info-field">
+                <span className="sap-info-label">Nome do destinat.NF-e:</span>
+                <span className="sap-info-value">NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL</span>
+              </div>
+              <div className="sap-info-field">
+                <span className="sap-info-label">Valor total incl.impostos:</span>
+                <span className="sap-info-value">2721.70</span>
+              </div>
+            </div>
+            <div className="sap-warning">
+              <span className="sap-warning-icon">⚠</span>
+              <span className="sap-warning-text">Saldo não é igual a zero: 0,39- Débito: 2.722,09 Crédito: 2.721,70 - Exibir ajuda</span>
+            </div>
+          </div>
+
+          <div className="sap-tabs-section">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>
+              <Tabs
+                type="card"
+                items={mainTabItems}
+                className="atribuir-itens-tabs"
+                activeKey={activeTab}
+                onChange={handleTabChange}
+                destroyInactiveTabPane
+              />
+              <div style={{ display: 'flex', gap: '4px', marginLeft: 'auto', marginRight: '4px' }}>
+                <Button 
+                  size="small" 
+                  className="sap-icon-button"
+                  icon={<FaFilter style={{ fontSize: '11px' }} />}
+                />
+                <Button 
+                  size="small" 
+                  className="sap-icon-button"
+                  icon={<FaCog style={{ fontSize: '11px' }} />}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="sap-table-section">
+            <Table
+              columns={[
+                { 
+                  title: 'Nº do item', 
+                  dataIndex: 'numero', 
+                  width: 80,
+                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
+                },
+                { 
+                  title: 'Nº do pedido', 
+                  dataIndex: 'pedido', 
+                  width: 120,
+                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
+                },
+                { 
+                  title: 'Item do pedido', 
+                  dataIndex: 'itemPedido', 
+                  width: 100,
+                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
+                },
+                { 
+                  title: 'Qtd.NF-e convertida', 
+                  dataIndex: 'quantidade', 
+                  width: 120, 
+                  align: 'right',
+                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
+                },
+                { 
+                  title: 'Unidade de pedido', 
+                  dataIndex: 'unidade', 
+                  width: 120 
+                },
+                { 
+                  title: 'Pedido - nº de material', 
+                  dataIndex: 'material', 
+                  width: 150,
+                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
+                },
+                { 
+                  title: 'Pedido - texto breve', 
+                  dataIndex: 'descricao', 
+                  width: 300 
+                },
+                { 
+                  title: 'CFOP', 
+                  dataIndex: 'cfop', 
+                  width: 80,
+                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
+                },
+                { 
+                  title: 'Cód.imposto', 
+                  dataIndex: 'codImposto', 
+                  width: 100,
+                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
+                }
+              ]}
+              dataSource={[
+                {
+                  key: '1',
+                  numero: '1',
+                  pedido: '4500210636',
+                  itemPedido: '10',
+                  quantidade: '36',
+                  unidade: 'CDA',
+                  material: '0290-B-2315-06 B',
+                  descricao: 'PETROCHEMICAL NAPHTHA PUMP-B',
+                  cfop: '2102AA',
+                  codImposto: 'Z3'
+                }
+              ]}
+              size="small"
+              pagination={false}
+              className="atribuir-itens-table"
+              scroll={{ y: '200px', x: 'max-content' }}
+              rowSelection={{
+                type: 'radio',
+                columnWidth: 28,
+                selectedRowKeys: ['1']
+              }}
+            />
+          </div>
+
+          <div className="sap-bottom-tabs">
+            <Tabs
+              type="card"
+              items={modalTabItems}
+              className="modal-tabs"
+              activeKey={modalActiveTab}
+              onChange={handleModalTabChange}
+              destroyInactiveTabPane
+            />
+          </div>
+        </div>
       </Modal>
     </div>
   );

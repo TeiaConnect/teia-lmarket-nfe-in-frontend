@@ -245,4 +245,565 @@
 
 ::-webkit-scrollbar-corner {
   background: #f0f0f0;
+}
+
+/* Estilos para o modal de simulação */
+.sap-simulacao-modal .ant-modal-content {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: 1px solid #999 !important;
+  background-color: #f0f0f0 !important;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.sap-simulacao-modal .ant-modal-header {
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid #999 !important;
+}
+
+.sap-modal-title {
+  background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%) !important;
+  border-bottom: 1px solid #999;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 20px;
+}
+
+.sap-help-button {
+  font-size: 10px !important;
+  height: 16px !important;
+  padding: 0 4px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #0066cc !important;
+  margin-right: 0 !important;
+}
+
+.sap-help-button:hover {
+  text-decoration: underline !important;
+}
+
+.sap-simulacao-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px);
+  background-color: #f0f0f0;
+}
+
+.sap-info-section {
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #999;
+  padding: 0;
+}
+
+.sap-info-row {
+  display: flex;
+  gap: 16px;
+  padding: 1px 8px;
+  font-size: 11px;
+  color: #333;
+  min-height: 16px;
+  align-items: center;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #ddd;
+}
+
+.sap-info-row:last-child {
+  border-bottom: none;
+}
+
+.sap-info-field {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.sap-info-label {
+  color: #333;
+}
+
+.sap-info-value {
+  font-family: 'Courier New', monospace;
+  color: #000;
+}
+
+.sap-warning {
+  background-color: #fff7e6;
+  border: 1px solid #ffcc80;
+  margin: 2px 8px 4px;
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sap-warning-icon {
+  color: #f5a623;
+  font-size: 12px;
+}
+
+.sap-warning-text {
+  color: #333;
+  font-size: 11px;
+}
+
+.sap-modal-footer {
+  background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%) !important;
+  border-top: 1px solid #999;
+  padding: 3px 8px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+.sap-button-group {
+  display: flex;
+  gap: 1px;
+}
+
+.sap-button-group .sap-button {
+  border-radius: 0 !important;
+  border: 1px solid #999 !important;
+  background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%) !important;
+  height: 18px !important;
+  min-width: 100px !important;
+  font-size: 11px !important;
+  color: #333 !important;
+  padding: 0 8px !important;
+  box-shadow: none !important;
+}
+
+.sap-button-group .sap-button:hover {
+  background: linear-gradient(180deg, #e8e8e8 0%, #d8d8d8 100%) !important;
+  border-color: #666 !important;
+}
+
+.sap-button-group .sap-button:active {
+  background: #d8d8d8 !important;
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.sap-icon-button {
+  border-radius: 0 !important;
+  border: 1px solid #999 !important;
+  background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%) !important;
+  height: 18px !important;
+  width: 18px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #333 !important;
+}
+
+.sap-icon-button:hover {
+  background: linear-gradient(180deg, #e8e8e8 0%, #d8d8d8 100%) !important;
+  border-color: #666 !important;
+}
+
+.sap-icon-button:active {
+  background: #d8d8d8 !important;
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.sap-table-section {
+  flex: 1;
+  overflow: hidden;
+  background-color: #fff;
+  border-top: 1px solid #999;
+}
+
+.sap-table-section .atribuir-itens-table {
+  border: none !important;
+}
+
+.sap-table-section .ant-table-thead > tr > th {
+  background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%) !important;
+  border-bottom: 1px solid #999 !important;
+  padding: 2px 8px !important;
+  height: 20px !important;
+  font-weight: normal !important;
+}
+
+.sap-table-section .ant-table-tbody > tr > td {
+  padding: 0 8px !important;
+  height: 18px !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  background-color: #fff !important;
+}
+
+.sap-table-section .ant-table-tbody > tr:nth-child(even) > td {
+  background-color: #f8f8f8 !important;
+}
+
+.sap-table-section .ant-table-tbody > tr.ant-table-row-selected > td {
+  background-color: #ffefd6 !important;
+}
+
+.sap-table-section .ant-table-tbody > tr:hover > td {
+  background-color: #e8f4ff !important;
+}
+
+.sap-tabs-section {
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #999;
+  padding: 4px 8px 0;
+  position: relative;
+}
+
+.sap-tabs-section .ant-tabs {
+  margin-bottom: -1px !important;
+}
+
+.sap-tabs-section .ant-tabs-nav {
+  margin: 0 !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  padding: 0 !important;
+}
+
+.sap-tabs-section .ant-tabs-nav-wrap {
+  padding: 0 !important;
+}
+
+.sap-tabs-section .ant-tabs-nav-list {
+  border: none !important;
+  height: 20px !important;
+  transform: none !important;
+}
+
+.sap-tabs-section .ant-tabs-ink-bar {
+  display: none !important;
+}
+
+.sap-tabs-section .ant-tabs-tab {
+  padding: 1px 8px !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%) !important;
+  border: 1px solid #999 !important;
+  border-bottom: none !important;
+  font-size: 11px !important;
+  height: 19px !important;
+  line-height: 16px !important;
+  position: relative !important;
+  top: 1px !important;
+  margin-right: -1px !important;
+  min-width: 80px !important;
+  justify-content: center !important;
+  color: #333 !important;
+  transition: none !important;
+}
+
+.sap-tabs-section .ant-tabs-tab:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%) !important;
+}
+
+.sap-tabs-section .ant-tabs-tab + .ant-tabs-tab {
+  margin-left: 0 !important;
+}
+
+.sap-tabs-section .ant-tabs-tab-active {
+  background: #fff !important;
+  border-bottom: 1px solid #fff !important;
+  z-index: 2 !important;
+  height: 20px !important;
+  margin-bottom: -1px !important;
+}
+
+.sap-tabs-section .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #333 !important;
+  font-weight: normal !important;
+}
+
+.sap-tabs-section .ant-tabs-nav::before {
+  border-bottom: 1px solid #999 !important;
+}
+
+.sap-tabs-section .ant-tabs-content {
+  height: 100% !important;
+  display: none !important;
+}
+
+.sap-tabs-section .ant-tabs-tabpane {
+  padding: 0 !important;
+  display: none !important;
+}
+
+/* Desabilitar animações */
+.sap-tabs-section .ant-tabs-content-holder {
+  display: none !important;
+}
+
+.sap-tabs-section .ant-tabs * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Ajuste para o botão de fechar do modal */
+.sap-simulacao-modal .ant-modal-close {
+  top: 2px !important;
+  right: 2px !important;
+}
+
+.sap-simulacao-modal .ant-modal-close-x {
+  width: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+  font-size: 10px !important;
+  color: #666 !important;
+}
+
+/* Ajuste para o radio button */
+.sap-table-section .ant-radio-wrapper {
+  margin-right: 0 !important;
+}
+
+.sap-table-section .ant-table-selection-column {
+  padding: 0 4px !important;
+  width: 24px !important;
+  text-align: center !important;
+}
+
+.sap-table-section .ant-radio-inner {
+  width: 12px !important;
+  height: 12px !important;
+  border-color: #999 !important;
+}
+
+.sap-table-section .ant-radio-inner::after {
+  width: 6px !important;
+  height: 6px !important;
+  background-color: #333 !important;
+}
+
+.sap-table-section .ant-radio-checked .ant-radio-inner {
+  border-color: #666 !important;
+}
+
+/* Estilos para as abas inferiores */
+.sap-bottom-tabs {
+  border-top: 1px solid #999;
+  background-color: #f0f0f0;
+}
+
+.sap-bottom-tabs .ant-tabs {
+  margin: 0 !important;
+}
+
+.sap-bottom-tabs .ant-tabs-nav {
+  margin: 0 !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  padding: 4px 8px 0 !important;
+}
+
+.sap-bottom-tabs .ant-tabs-nav-list {
+  border: none !important;
+  height: 20px !important;
+  transform: none !important;
+}
+
+.sap-bottom-tabs .ant-tabs-tab {
+  padding: 1px 8px !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%) !important;
+  border: 1px solid #999 !important;
+  border-bottom: none !important;
+  font-size: 11px !important;
+  height: 19px !important;
+  line-height: 16px !important;
+  position: relative !important;
+  top: 1px !important;
+  margin-right: -1px !important;
+  min-width: 80px !important;
+  justify-content: center !important;
+  color: #333 !important;
+}
+
+.sap-bottom-tabs .ant-tabs-tab-active {
+  background: #fff !important;
+  border-bottom: 1px solid #fff !important;
+  z-index: 2 !important;
+}
+
+.sap-bottom-tabs .ant-tabs-content {
+  background-color: #fff !important;
+  padding: 8px !important;
+  border-top: 1px solid #999 !important;
+  min-height: 80px !important;
+}
+
+/* Estilos para a seção de valores */
+.sap-values-section,
+.sap-taxes-section {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.sap-values-row,
+.sap-taxes-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 4px;
+  align-items: center;
+}
+
+.sap-values-field,
+.sap-taxes-field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sap-values-label,
+.sap-taxes-label {
+  color: #333;
+}
+
+.sap-values-value,
+.sap-taxes-value {
+  font-family: 'Courier New', monospace;
+  color: #000;
+}
+
+/* Ajuste da altura da tabela */
+.sap-table-section {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 450px);
+}
+
+.sap-table-tabs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #999;
+}
+
+/* Estilos para as abas */
+.ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+  background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%) !important;
+  border: 1px solid #999 !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  margin-right: -1px !important;
+  padding: 2px 12px !important;
+  height: 22px !important;
+  min-width: 80px !important;
+  font-size: 11px !important;
+  color: #333 !important;
+  position: relative !important;
+  top: 1px !important;
+}
+
+.ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active {
+  background: #fff !important;
+  border-bottom: 1px solid #fff !important;
+  z-index: 2 !important;
+}
+
+.ant-tabs-card > .ant-tabs-nav .ant-tabs-nav-list {
+  border: none !important;
+  margin-left: 4px !important;
+}
+
+.ant-tabs-card > .ant-tabs-nav {
+  margin: 0 !important;
+  border-bottom: 1px solid #999 !important;
+  padding: 4px 4px 0 !important;
+  background: #f0f0f0 !important;
+}
+
+.ant-tabs-content {
+  height: 100% !important;
+  padding: 8px !important;
+  background: #fff !important;
+}
+
+/* Estilos específicos para as abas do modal */
+.modal-tabs {
+  margin-top: 8px !important;
+}
+
+.modal-tabs .ant-tabs-nav {
+  margin: 0 !important;
+  height: 26px !important;
+}
+
+.modal-tabs .ant-tabs-content {
+  border-top: 1px solid #999 !important;
+  padding: 12px !important;
+}
+
+/* Ajustes nos campos de valores e impostos */
+.sap-values-section,
+.sap-taxes-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  font-size: 11px;
+  font-family: Arial, sans-serif;
+}
+
+.sap-values-row,
+.sap-taxes-row {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.sap-values-field,
+.sap-taxes-field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 160px;
+}
+
+.sap-values-label,
+.sap-taxes-label {
+  color: #333;
+  font-weight: normal;
+}
+
+.sap-values-value,
+.sap-taxes-value {
+  font-family: 'Courier New', monospace;
+  color: #000;
+  font-weight: normal;
+}
+
+/* Ajustes na tabela */
+.ant-table {
+  font-size: 11px !important;
+  font-family: Arial, sans-serif !important;
+}
+
+.ant-table-thead > tr > th {
+  background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%) !important;
+  padding: 4px 8px !important;
+  font-weight: normal !important;
+  color: #333 !important;
+  border-color: #999 !important;
+}
+
+.ant-table-tbody > tr > td {
+  padding: 2px 8px !important;
+  border-color: #ddd !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #e8f2fe !important;
 } 
