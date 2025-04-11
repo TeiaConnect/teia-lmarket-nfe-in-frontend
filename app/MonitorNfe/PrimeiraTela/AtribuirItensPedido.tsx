@@ -16,6 +16,8 @@ interface ItemNFe {
   unidade: string;
   codigoMaterial: string;
   descricao: string;
+  npedido: string;
+  itempedido: string;
 }
 
 interface ItemPedido {
@@ -81,12 +83,14 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
 
               const itensFormatados: ItemNFe[] = itens.map((item: any, index: number) => ({
                 key: String(index + 1),
-                numero: item.prod.cProd || '',
-                categoria: item.prod.xProd || '',
+                numero: item.nItem || String(index + 1),
+                // categoria: item.prod.xProd || '',
                 quantidade: Number(item.prod.qCom) || 0,
                 unidade: item.prod.uCom || '',
                 codigoMaterial: item.prod.cProd || '',
-                descricao: item.prod.xProd || ''
+                descricao: item.prod.xProd || '',
+                npedido: item.prod.xPed || '',
+                itempedido: item.prod.nItemPed || ''
               }));
 
               console.log('Itens formatados:', itensFormatados);
@@ -114,26 +118,28 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
       title: 'Nº do item',
       dataIndex: 'numero',
       key: 'numero',
-      width: 80,
+      width: 60,
+      align: 'center',
     },
+    // {
+    //   title: 'Ctg. do item',
+    //   dataIndex: 'categoria',
+    //   key: 'categoria',
+    //   width: 20,
+    // },
     {
-      title: 'Categoria do item',
-      dataIndex: 'categoria',
-      key: 'categoria',
-      width: 120,
-    },
-    {
-      title: 'Quantidade',
+      title: 'Qtd.NF-e',
       dataIndex: 'quantidade',
       key: 'quantidade',
-      width: 100,
-      align: 'right',
+      width: 80,
+      align: 'center',
     },
     {
       title: 'Unidade',
       dataIndex: 'unidade',
       key: 'unidade',
-      width: 80,
+      width: 50,
+      align: 'center',
     },
     {
       title: 'Nº de material',
@@ -145,7 +151,19 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
       title: 'Descrição',
       dataIndex: 'descricao',
       key: 'descricao',
-      width: 300,
+      width: 240,
+    },
+    {
+      title: 'Nº do pedido',
+      dataIndex: 'npedido',
+      key: 'npedido',
+      width: 120,
+    },
+    {
+      title: 'Item do pedido',
+      dataIndex: 'itempedido',
+      key: 'itempedido',
+      width: 100,
     }
   ];
 
@@ -154,19 +172,22 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
       title: 'Nº do pedido',
       dataIndex: 'numeroPedido',
       key: 'numeroPedido',
-      width: 120,
+      width: 100,
+      align: 'center',
     },
     {
       title: 'Item do pedido',
       dataIndex: 'itemPedido',
       key: 'itemPedido',
-      width: 100,
+      width: 60,
+      align: 'center',
     },
     {
-      title: 'ERP nº de material',
+      title: 'Nº Material ERP',
       dataIndex: 'codigoMaterialERP',
       key: 'codigoMaterialERP',
       width: 150,
+      align: 'center',
     },
     {
       title: 'ERP texto breve material',
@@ -175,17 +196,18 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
       width: 300,
     },
     {
-      title: 'Quantidade do pedido',
+      title: 'Qtd.Pedido',
       dataIndex: 'quantidadePedido',
       key: 'quantidadePedido',
-      width: 140,
-      align: 'right',
+      width: 60,
+      align: 'center',
     },
     {
-      title: 'ERP unidade de medida',
+      title: 'UMD ERP',
       dataIndex: 'unidadeMedidaERP',
       key: 'unidadeMedidaERP',
-      width: 150,
+      width: 60,
+      align: 'center',
     }
   ];
 
@@ -492,8 +514,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
           >
             Reinicializar
           </Button>
-        </div>
-        <div style={{ display: 'flex', gap: '4px' }}>
           <Button 
             size="small"
             icon={<FaFileCode style={{ fontSize: '11px' }} />}
@@ -502,7 +522,10 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
           >
             Simular XML
           </Button>
-          <Button 
+        </div>
+        <div>
+          
+          {/* <Button 
             size="small"
             icon={<FaFileInvoice style={{ fontSize: '11px' }} />}
             className="sap-button"
@@ -515,9 +538,9 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             className="sap-button"
           >
             Contagem
-          </Button>
+          </Button> */}
         </div>
-      </div>
+      </div> {/*botões de ação*/}
 
       <div className="sap-header">
         <div className="sap-header-row">
@@ -548,14 +571,15 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             </span>
           </div>
         </div>
-      </div>
+      </div> {/*cabeçalho*/}
 
       <div style={{
-        padding: '0 8px',
+        padding: '0',
         backgroundColor: '#fff',
         borderBottom: '1px solid #ccc',
         display: 'flex',
-        gap: '1px'
+        gap: '1px',
+        width: '100%'
       }}>
         <Tabs
           type="card"
@@ -564,14 +588,15 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             { label: 'Pesquisa global', key: '2' }
           ]}
           style={{
-            marginBottom: 0
+            marginBottom: 0,
+            width: '100%'
           }}
           className="atribuir-itens-tabs"
           activeKey={activeTab}
           onChange={handleTabChange}
           destroyInactiveTabPane
         />
-      </div>
+      </div> {/*abas de pesquisa*/}
 
       <div style={{ 
         flex: 1,
@@ -581,13 +606,15 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
         backgroundColor: '#f0f0f0',
         overflow: 'hidden',
         minHeight: 0,
-        position: 'relative'
+        position: 'relative',
+        width: '100%'
       }}>
         <div style={{ 
           display: 'flex',
           gap: '1px',
           flex: 1,
-          minHeight: 0
+          minHeight: 0,
+          width: '100%'
         }}>
           <div style={{ 
             flex: '0 0 50%',
@@ -595,18 +622,19 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0,
-            maxWidth: '50%'
+            maxWidth: '50%',
+            width: '100%'
           }}>
             <div className="sap-section-title">
               <span>Itens NF-e pendentes</span>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px' }}>
-                <Button 
+                {/* <Button 
                   size="small"
                   icon={<FaRegistered style={{ fontSize: '11px' }} />}
                   className="sap-button-compact"
                 >
                   MIGO/MIRO
-                </Button>
+                </Button> */}
                 <Button 
                   size="small"
                   icon={<EyeOutlined style={{ fontSize: '11px' }} />}
@@ -615,13 +643,13 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
                 >
                   Exibir XML
                 </Button>
-                <Button 
+                {/* <Button 
                   size="small"
                   icon={<FileTextOutlined style={{ fontSize: '11px' }} />}
                   className="sap-button-compact"
                 >
                   Exibir DANFE
-                </Button>
+                </Button> */}
               </div>
             </div>
             <div style={{ flex: 1, overflow: 'hidden' }}>
@@ -640,8 +668,15 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
                 }}
                 className="atribuir-itens-table"
               />
-            </div>
+            </div> {/*tabela de itens da NF-e*/}
           </div>
+          <div style={{
+            flex: '0 0 1px',
+            backgroundColor: '#ccc',
+            width: '1px',
+            height: '100%'
+          }}>
+            </div> {/*divisor de colunas*/}
 
           <div style={{ 
             flex: '0 0 50%',
@@ -649,7 +684,8 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0,
-            maxWidth: '50%'
+            maxWidth: '50%',
+            width: '100%'
           }}>
             <div className="sap-section-title" style={{ justifyContent: 'space-between' }}>
               <span>Itens do pedido disponíveis</span>
@@ -680,7 +716,7 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
                 className="atribuir-itens-table"
               />
             </div>
-          </div>
+          </div> {/*tabela de itens do pedido*/}
         </div>
 
         <div style={{ 
@@ -713,7 +749,7 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             />
           </div>
         </div>
-      </div>
+      </div> {/*tabela de itens atribuídos*/}
 
       <Modal
         title="Detalhes da NF-e"
