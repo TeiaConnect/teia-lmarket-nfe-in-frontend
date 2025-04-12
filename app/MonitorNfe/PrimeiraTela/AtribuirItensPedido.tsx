@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Space, message, Dropdown, Modal, Tabs } from 'antd';
+import { Button, Table, Space, message, Dropdown, Modal, Tabs, Input } from 'antd';
 import { EyeOutlined, FileTextOutlined, DownOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { FaFileCode, FaFileInvoice, FaCheck, FaTimes, FaSync, FaPlayCircle, FaBalanceScale, FaRegistered, FaSearch, FaFilter, FaCog } from 'react-icons/fa';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import './AtribuirItensPedido.css';
+import type { RowSelectMethod } from 'antd/es/table/interface';
 
 interface ItemNFe {
   key: string;
@@ -49,6 +50,27 @@ export interface AtribuirItensPedidoProps {
   chaveAcesso?: string;
 }
 
+interface SearchParams {
+  numeroPedido: string;
+  itemPedido: string;
+  codMaterial: string;
+}
+
+interface PesquisaModalProps {
+  visible: boolean;
+  onCancel: () => void;
+  onSearch: (type: string) => void;
+  tipoPesquisa: string;
+  searchParams: SearchParams;
+  setSearchParams: (params: SearchParams) => void;
+}
+
+interface TabItem {
+  key: string;
+  label: string;
+  children: React.ReactNode;
+}
+
 const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }) => {
   const [activeTab, setActiveTab] = useState('1');
   const [modalActiveTab, setModalActiveTab] = useState('1');
@@ -58,6 +80,17 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
   const [detalhesNFe, setDetalhesNFe] = useState<any>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSimulacaoXmlVisible, setIsSimulacaoXmlVisible] = useState(false);
+  const [isPesquisaModalVisible, setIsPesquisaModalVisible] = useState(false);
+  const [tipoPesquisa, setTipoPesquisa] = useState('1'); // 1: Pedido, 2: Pedido e Item, 3: Ampliada
+
+  const [searchParams, setSearchParams] = useState<SearchParams>({
+    numeroPedido: '',
+    itemPedido: '',
+    codMaterial: ''
+  });
+
+  const [selectedNFeItem, setSelectedNFeItem] = useState<ItemNFe | null>(null);
+  const [selectedPedidoItem, setSelectedPedidoItem] = useState<ItemPedido | null>(null);
 
   useEffect(() => {
     if (chaveAcesso) {
@@ -112,6 +145,68 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
       carregarDadosNFe();
     }
   }, [chaveAcesso]);
+
+  const handleSearch = async (type: string) => {
+    try {
+      let queryParams = new URLSearchParams();
+      
+      switch (type) {
+        case '1': // Procurar Pedido
+          if (searchParams.numeroPedido) {
+            queryParams.append('numeroPedido', searchParams.numeroPedido);
+          }
+          break;
+        case '2': // Procurar Pedido e Item
+          if (searchParams.numeroPedido) {
+            queryParams.append('numeroPedido', searchParams.numeroPedido);
+          }
+          if (searchParams.itemPedido) {
+            queryParams.append('itemPedido', searchParams.itemPedido);
+          }
+          break;
+        case '3': // Pesquisa Ampliada
+          if (searchParams.numeroPedido) {
+            queryParams.append('numeroPedido', searchParams.numeroPedido);
+          }
+          if (searchParams.itemPedido) {
+            queryParams.append('itemPedido', searchParams.itemPedido);
+          }
+          if (searchParams.codMaterial) {
+            queryParams.append('codMaterial', searchParams.codMaterial);
+          }
+          break;
+      }
+
+      const response = await fetch(`/api/pedidos?${queryParams.toString()}`);
+      const data = await response.json();
+
+      if (data && Array.isArray(data)) {
+        const itensFormatados: ItemPedido[] = data.map((item: any, index: number) => ({
+          key: String(index + 1),
+          numeroPedido: item.numero_pedido || '',
+          itemPedido: item.numero_item || '',
+          codigoMaterialERP: item.cod_material_erp || '',
+          descricaoMaterialERP: item.descricao_material || '',
+          quantidadePedido: Number(item.quantidade) || 0,
+          unidadeMedidaERP: item.unidade_medida || ''
+        }));
+
+        setItensPedido(itensFormatados);
+      } else {
+        setItensPedido([]);
+        message.warning('Nenhum pedido encontrado');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar pedidos:', error);
+      message.error('Erro ao buscar pedidos');
+      setItensPedido([]);
+    }
+  };
+
+  const handleMenuItemClick = (key: string) => {
+    setTipoPesquisa(key);
+    setIsPesquisaModalVisible(true);
+  };
 
   const colunasNFe: ColumnsType<ItemNFe> = [
     {
@@ -314,17 +409,20 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     {
       key: '1',
       label: 'Procurar Pedido',
-      icon: <FaSearch />
+      icon: <FaSearch />,
+      onClick: () => handleMenuItemClick('1')
     },
     {
       key: '2',
       label: 'Procurar Pedido e Item',
-      icon: <FaSearch />
+      icon: <FaSearch />,
+      onClick: () => handleMenuItemClick('2')
     },
     {
       key: '3',
       label: 'Pesquisa Ampliada',
-      icon: <FaSearch />
+      icon: <FaSearch />,
+      onClick: () => handleMenuItemClick('3')
     }
   ];
 
@@ -361,6 +459,115 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
 
   const handleModalTabChange = (key: string) => {
     setModalActiveTab(key);
+  };
+
+  const handleNFeItemSelect = (selectedRowKeys: React.Key[], selectedRows: ItemNFe[], info: { type: RowSelectMethod }) => {
+    if (selectedRows.length > 0) {
+      setSelectedNFeItem(selectedRows[0]);
+    } else {
+      setSelectedNFeItem(null);
+    }
+  };
+
+  const handlePedidoItemSelect = (selectedRowKeys: React.Key[], selectedRows: ItemPedido[], info: { type: RowSelectMethod }) => {
+    if (selectedRows.length > 0) {
+      setSelectedPedidoItem(selectedRows[0]);
+    } else {
+      setSelectedPedidoItem(null);
+    }
+  };
+
+  const handleAtribuirItem = () => {
+    if (!selectedNFeItem || !selectedPedidoItem) {
+      message.warning('Selecione um item da NF-e e um item do pedido');
+      return;
+    }
+
+    // Verificar se o item já foi atribuído
+    const itemJaAtribuido = itensAtribuidos.some(
+      item => item.numeroPedido === selectedPedidoItem.numeroPedido && 
+              item.itemPedido === selectedPedidoItem.itemPedido
+    );
+
+    if (itemJaAtribuido) {
+      message.warning('Este item do pedido já foi atribuído');
+      return;
+    }
+
+    // Criar novo item atribuído
+    const novoItemAtribuido: ItemAtribuido = {
+      key: String(itensAtribuidos.length + 1),
+      categoria: selectedNFeItem.categoria || '',
+      quantidadeNFe: selectedNFeItem.quantidade,
+      unidadeMedida: selectedNFeItem.unidade,
+      codigoMaterialNFe: selectedNFeItem.codigoMaterial,
+      descricaoProduto: selectedNFeItem.descricao,
+      numeroPedido: selectedPedidoItem.numeroPedido,
+      itemPedido: selectedPedidoItem.itemPedido,
+      quantidadeConvertida: selectedNFeItem.quantidade, // Aqui você pode implementar a lógica de conversão
+      unidadeMedidaERP: selectedPedidoItem.unidadeMedidaERP,
+      codigoMaterialERP: selectedPedidoItem.codigoMaterialERP,
+      descricaoMaterialERP: selectedPedidoItem.descricaoMaterialERP
+    };
+
+    setItensAtribuidos([...itensAtribuidos, novoItemAtribuido]);
+    message.success('Item atribuído com sucesso');
+
+    // Limpar seleções
+    setSelectedNFeItem(null);
+    setSelectedPedidoItem(null);
+  };
+
+  const handleAnularAtribuicao = (record: ItemAtribuido) => {
+    setItensAtribuidos(itensAtribuidos.filter(item => item.key !== record.key));
+    message.success('Atribuição anulada com sucesso');
+  };
+
+  const handleGravarAtribuicoes = async () => {
+    if (itensAtribuidos.length === 0) {
+      message.warning('Não há atribuições para gravar');
+      return;
+    }
+
+    try {
+      // Preparar dados para salvar
+      const atribuicoesParaSalvar = itensAtribuidos.map(item => ({
+        chave_acesso: chaveAcesso,
+        categoria: item.categoria,
+        quantidade_nfe: item.quantidadeNFe,
+        unidade_medida: item.unidadeMedida,
+        codigo_material_nfe: item.codigoMaterialNFe,
+        descricao_produto: item.descricaoProduto,
+        numero_pedido: item.numeroPedido,
+        item_pedido: item.itemPedido,
+        quantidade_convertida: item.quantidadeConvertida,
+        unidade_medida_erp: item.unidadeMedidaERP,
+        codigo_material_erp: item.codigoMaterialERP,
+        descricao_material_erp: item.descricaoMaterialERP,
+        data_atribuicao: new Date().toISOString()
+      }));
+
+      const response = await fetch('/api/atribuicoes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(atribuicoesParaSalvar)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        message.success(`Atribuições salvas com sucesso. ${data.insertedCount} registros inseridos.`);
+        // Limpar as atribuições após salvar
+        setItensAtribuidos([]);
+      } else {
+        throw new Error(data.error || 'Erro ao salvar atribuições');
+      }
+    } catch (error) {
+      console.error('Erro ao gravar atribuições:', error);
+      message.error('Erro ao gravar atribuições');
+    }
   };
 
   const ValoresContent = () => (
@@ -445,26 +652,53 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     size: 'small' as const
   };
 
-  const mainTabItems = [
+  const mainTabItems: TabItem[] = [
     {
-      label: 'Itens',
       key: '1',
-      children: <Table {...tableProps} />
+      label: 'Itens NF-e Pendentes',
+      children: (
+        <div className="sap-tab-content">
+          <Table
+            columns={colunasNFe}
+            dataSource={itensNFe}
+            rowSelection={{
+              type: 'radio',
+              onChange: handleNFeItemSelect
+            }}
+            pagination={false}
+          />
+        </div>
+      )
     },
     {
-      label: 'Valores totais',
       key: '2',
-      children: <ValoresContent />
+      label: 'Itens do Pedido Disponíveis',
+      children: (
+        <div className="sap-tab-content">
+          <Table
+            columns={colunasPedido}
+            dataSource={itensPedido}
+            rowSelection={{
+              type: 'radio',
+              onChange: handlePedidoItemSelect
+            }}
+            pagination={false}
+          />
+        </div>
+      )
     },
     {
-      label: 'Valores',
       key: '3',
-      children: <ValoresContent />
-    },
-    {
-      label: 'Impostos',
-      key: '4',
-      children: <ImpostosContent />
+      label: 'Itens NF-e Atribuídos',
+      children: (
+        <div className="sap-tab-content">
+          <Table
+            columns={colunasAtribuidos}
+            dataSource={itensAtribuidos}
+            pagination={false}
+          />
+        </div>
+      )
     }
   ];
 
@@ -480,6 +714,116 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
       children: <ImpostosContent />
     }
   ];
+
+  const PesquisaModal: React.FC<PesquisaModalProps> = ({ 
+    visible, 
+    onCancel, 
+    onSearch, 
+    tipoPesquisa, 
+    searchParams, 
+    setSearchParams 
+  }) => {
+    const getModalTitle = () => {
+      switch (tipoPesquisa) {
+        case '1':
+          return 'Procurar Pedido';
+        case '2':
+          return 'Procurar Pedido e Item';
+        case '3':
+          return 'Pesquisa Ampliada';
+        default:
+          return '';
+      }
+    };
+
+    return (
+      <Modal
+        title={
+          <div className="sap-modal-title">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontFamily: 'Arial', fontWeight: 'normal' }}>
+                {getModalTitle()}
+              </span>
+              <Button 
+                size="small" 
+                className="sap-help-button"
+                icon={<QuestionCircleOutlined />}
+              >
+                Ajuda
+              </Button>
+            </div>
+          </div>
+        }
+        open={visible}
+        onCancel={onCancel}
+        width={800}
+        className="sap-pesquisa-modal"
+        footer={
+          <div className="sap-modal-footer">
+            <div className="sap-button-group">
+              <Button 
+                size="small" 
+                className="sap-button" 
+                icon={<FaSync style={{ fontSize: '11px' }} />}
+                onClick={onCancel}
+              >
+                Voltar
+              </Button>
+              <Button 
+                size="small" 
+                className="sap-button" 
+                icon={<FaSearch style={{ fontSize: '11px' }} />}
+                onClick={() => {
+                  onSearch(tipoPesquisa);
+                  onCancel();
+                }}
+              >
+                Pesquisar
+              </Button>
+            </div>
+          </div>
+        }
+      >
+        <div className="sap-pesquisa-content">
+          <div className="sap-form-section">
+            <div className="sap-form-row">
+              <div className="sap-form-field">
+                <label>Nº do pedido:</label>
+                <Input
+                  value={searchParams.numeroPedido}
+                  onChange={(e) => setSearchParams({ ...searchParams, numeroPedido: e.target.value })}
+                  style={{ width: '200px' }}
+                  placeholder="Digite o número do pedido"
+                />
+              </div>
+              {(tipoPesquisa === '2' || tipoPesquisa === '3') && (
+                <div className="sap-form-field">
+                  <label>Item do pedido:</label>
+                  <Input
+                    value={searchParams.itemPedido}
+                    onChange={(e) => setSearchParams({ ...searchParams, itemPedido: e.target.value })}
+                    style={{ width: '100px' }}
+                    placeholder="Digite o item"
+                  />
+                </div>
+              )}
+              {tipoPesquisa === '3' && (
+                <div className="sap-form-field">
+                  <label>Material:</label>
+                  <Input
+                    value={searchParams.codMaterial}
+                    onChange={(e) => setSearchParams({ ...searchParams, codMaterial: e.target.value })}
+                    style={{ width: '200px' }}
+                    placeholder="Digite o código do material"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
 
   return (
     <div style={{ 
@@ -504,6 +848,8 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             size="small"
             icon={<FaCheck style={{ fontSize: '11px' }} />}
             className="sap-button"
+            onClick={handleGravarAtribuicoes}
+            disabled={itensAtribuidos.length === 0}
           >
             Gravar atribuições
           </Button>
@@ -511,6 +857,12 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             size="small"
             icon={<FaSync style={{ fontSize: '11px' }} />}
             className="sap-button"
+            onClick={() => {
+              setItensAtribuidos([]);
+              setSelectedNFeItem(null);
+              setSelectedPedidoItem(null);
+              message.success('Atribuições reinicializadas');
+            }}
           >
             Reinicializar
           </Button>
@@ -628,13 +980,15 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             <div className="sap-section-title">
               <span>Itens NF-e pendentes</span>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px' }}>
-                {/* <Button 
+                <Button 
                   size="small"
-                  icon={<FaRegistered style={{ fontSize: '11px' }} />}
+                  icon={<FaCheck style={{ fontSize: '11px' }} />}
                   className="sap-button-compact"
+                  onClick={handleAtribuirItem}
+                  disabled={!selectedNFeItem || !selectedPedidoItem}
                 >
-                  MIGO/MIRO
-                </Button> */}
+                  Atribuir
+                </Button>
                 <Button 
                   size="small"
                   icon={<EyeOutlined style={{ fontSize: '11px' }} />}
@@ -643,13 +997,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
                 >
                   Exibir XML
                 </Button>
-                {/* <Button 
-                  size="small"
-                  icon={<FileTextOutlined style={{ fontSize: '11px' }} />}
-                  className="sap-button-compact"
-                >
-                  Exibir DANFE
-                </Button> */}
               </div>
             </div>
             <div style={{ flex: 1, overflow: 'hidden' }}>
@@ -661,10 +1008,7 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
                 scroll={{ y: 'calc(100% - 8px)', x: 'max-content' }}
                 rowSelection={{
                   type: 'radio',
-                  onChange: (selectedRowKeys, selectedRows) => {
-                    console.log('selectedRowKeys:', selectedRowKeys);
-                    console.log('selectedRows:', selectedRows);
-                  }
+                  onChange: handleNFeItemSelect
                 }}
                 className="atribuir-itens-table"
               />
@@ -708,10 +1052,7 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
                 scroll={{ y: 'calc(100% - 8px)', x: 'max-content' }}
                 rowSelection={{
                   type: 'radio',
-                  onChange: (selectedRowKeys, selectedRows) => {
-                    console.log('selectedRowKeys:', selectedRowKeys);
-                    console.log('selectedRows:', selectedRows);
-                  }
+                  onChange: handlePedidoItemSelect
                 }}
                 className="atribuir-itens-table"
               />
@@ -734,6 +1075,17 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
               size="small"
               icon={<FaTimes style={{ fontSize: '11px' }} />}
               className="sap-button"
+              onClick={() => {
+                if (selectedNFeItem) {
+                  const itemAtribuido = itensAtribuidos.find(
+                    item => item.codigoMaterialNFe === selectedNFeItem.codigoMaterial
+                  );
+                  if (itemAtribuido) {
+                    handleAnularAtribuicao(itemAtribuido);
+                  }
+                }
+              }}
+              disabled={!selectedNFeItem}
             >
               Anular atribuição
             </Button>
@@ -782,6 +1134,15 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
           </div>
         )}
       </Modal>
+
+      <PesquisaModal
+        visible={isPesquisaModalVisible}
+        onCancel={() => setIsPesquisaModalVisible(false)}
+        onSearch={handleSearch}
+        tipoPesquisa={tipoPesquisa}
+        searchParams={searchParams}
+        setSearchParams={setSearchParams}
+      />
 
       <Modal
         title={
