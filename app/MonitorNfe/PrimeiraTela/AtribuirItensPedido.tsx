@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Space, message, Dropdown, Modal, Tabs, Input } from 'antd';
+import { Button, Table, Space, message, Dropdown, Modal, Tabs, Input, Spin } from 'antd';
 import { EyeOutlined, FileTextOutlined, DownOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { FaFileCode, FaFileInvoice, FaCheck, FaTimes, FaSync, FaPlayCircle, FaBalanceScale, FaRegistered, FaSearch, FaFilter, FaCog } from 'react-icons/fa';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import './AtribuirItensPedido.css';
 import type { RowSelectMethod } from 'antd/es/table/interface';
+import styled from 'styled-components';
 
 interface ItemNFe {
   key: string;
@@ -57,6 +58,30 @@ interface ItemPedidoDetalhado {
   valorTotal: number;
 }
 
+interface ItemConferencia {
+  key: string;
+  item: string;
+  codMatNfe: string;
+  codMatErp: string;
+  descNfe: string;
+  descErp: string;
+  ncm: string;
+  cfop: string;
+  qtdNfe: number;
+  qtdErp: number;
+  vlrUnitNfe: number;
+  vlrUnitErp: number;
+  baseIcms: number;
+  aliqIcms: number;
+  vlrIcms: number;
+  baseIpi: number;
+  aliqIpi: number;
+  vlrIpi: number;
+  divergenciaCodMat: boolean;
+  divergenciaQtd: boolean;
+  divergenciaVlrUnit: boolean;
+}
+
 export interface AtribuirItensPedidoProps {
   chaveAcesso?: string;
 }
@@ -93,6 +118,180 @@ interface TabItem {
   children: React.ReactNode;
 }
 
+const CardSection = styled.div`
+  h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #666;
+  }
+  div {
+    font-size: 13px;
+    p {
+      margin: 0 0 4px 0;
+      &:last-child {
+        margin: 0;
+      }
+    }
+  }
+`;
+
+const StyledTable = styled(Table)`
+  .ant-table-thead > tr > th {
+    background-color: #fafafa;
+    color: #666;
+    font-size: 12px;
+    padding: 8px;
+  }
+  .ant-table-tbody > tr > td {
+    font-size: 12px;
+    padding: 8px;
+  }
+  .ant-table-row:hover {
+    background-color: #f5f5f5;
+  }
+`;
+
+const CriticasPanel = styled.div`
+  background-color: #fff1f0;
+  border: 1px solid #ffccc7;
+  border-radius: 4px;
+  padding: 12px;
+  h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #cf1322;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  ul {
+    margin: 0;
+    padding: 0 0 0 20px;
+    font-size: 13px;
+    color: #cf1322;
+  }
+`;
+
+const ComparativoTotais = styled.div`
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 16px;
+
+  h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #52c41a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .totais-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .total-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .valor-nfe {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .valor-erp {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .divergencia {
+      font-size: 12px;
+      color: #cf1322;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+`;
+
+const ModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background-color: #fff;
+  border-radius: 8px;
+`;
+
+const InfoCard = styled.div`
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+`;
+
+interface ColumnRenderProps {
+  text: string | number;
+  record: ItemConferencia;
+}
+
+interface ValueRenderProps {
+  value: string | number;
+}
+
+const renderValue = ({ value }: ValueRenderProps) => {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value));
+};
+
+const renderQuantity = ({ value }: ValueRenderProps) => {
+  return Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+};
+
+const renderPercentage = ({ value }: ValueRenderProps) => {
+  return `${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}%`;
+};
+
+const renderDivergentValue = ({ text, record }: ColumnRenderProps) => (
+  <div style={{ 
+    color: record.divergenciaVlrUnit ? '#ff4d4f' : 'inherit',
+    fontWeight: record.divergenciaVlrUnit ? 'bold' : 'normal'
+  }}>
+    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(text))}
+  </div>
+);
+
+const renderDivergentQuantity = ({ text, record }: ColumnRenderProps) => (
+  <div style={{ 
+    color: record.divergenciaQtd ? '#ff4d4f' : 'inherit',
+    fontWeight: record.divergenciaQtd ? 'bold' : 'normal'
+  }}>
+    {Number(text).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+  </div>
+);
+
+const renderDivergentCode = ({ text, record }: ColumnRenderProps) => (
+  <div style={{ 
+    color: record.divergenciaCodMat ? '#ff4d4f' : 'inherit',
+    fontWeight: record.divergenciaCodMat ? 'bold' : 'normal'
+  }}>
+    {text}
+  </div>
+);
+
 const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }) => {
   const [activeTab, setActiveTab] = useState('1');
   const [modalActiveTab, setModalActiveTab] = useState('1');
@@ -128,6 +327,7 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
   const [itensPedidoDetalhado, setItensPedidoDetalhado] = useState<ItemPedidoDetalhado[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedItems, setSelectedItems] = useState<ItemPedidoDetalhado[]>([]);
+  const [isSimulacaoLoading, setIsSimulacaoLoading] = useState(false);
 
   useEffect(() => {
     if (chaveAcesso) {
@@ -486,8 +686,35 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     }
   };
 
-  const handleSimularXml = () => {
-    setIsSimulacaoXmlVisible(true);
+  const handleSimularXml = async () => {
+    try {
+      if (!chaveAcesso) {
+        message.error('Chave de acesso não encontrada');
+        return;
+      }
+
+      setIsSimulacaoLoading(true);
+      const response = await fetch(`/api/nfe/inbound?chNFe=${chaveAcesso}`);
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const nfe = data.find((item: any) => 
+          item.nfeProc?.protNFe?.infProt?.chNFe === chaveAcesso
+        );
+        
+        if (nfe) {
+          setDetalhesNFe(nfe);
+          setIsSimulacaoXmlVisible(true);
+        } else {
+          message.error('NF-e não encontrada');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar detalhes da NF-e:', error);
+      message.error('Erro ao carregar detalhes da NF-e');
+    } finally {
+      setIsSimulacaoLoading(false);
+    }
   };
 
   const handleTabChange = (key: string) => {
@@ -1310,6 +1537,40 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     );
   };
 
+  const styles = {
+    modalTitle: {
+      fontFamily: 'Arial',
+      fontWeight: 'normal' as const,
+      fontSize: '16px',
+      color: '#333'
+    },
+    helpButton: {
+      marginLeft: '8px',
+      border: 'none',
+      backgroundColor: 'transparent',
+      color: '#1890ff',
+      padding: '4px 8px',
+      height: '24px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px'
+    },
+    modalContent: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      gap: '16px',
+      padding: '16px'
+    },
+    infoCard: {
+      padding: '12px',
+      backgroundColor: '#f5f5f5',
+      borderRadius: '4px',
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '12px'
+    }
+  };
+
   return (
     <div style={{ 
       width: '100%',
@@ -1631,14 +1892,15 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
 
       <Modal
         title={
-          <div className="sap-modal-title">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontFamily: 'Arial', fontWeight: 'normal' }}>
-                Simular itens do pedido: 33110811663724000131550010000200501271045599
+          <div className="sap-modal-title" style={styles.modalTitle}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <span>
+                Comparação Doc. Fiscal X ERP - NF-e: {detalhesNFe?.nfeProc?.protNFe?.infProt?.chNFe || 'N/A'}
               </span>
               <Button 
                 size="small" 
-                className="sap-help-button"
+                style={styles.helpButton}
+                icon={<QuestionCircleOutlined />}
               >
                 Ajuda
               </Button>
@@ -1647,7 +1909,7 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
         }
         open={isSimulacaoXmlVisible}
         onCancel={() => setIsSimulacaoXmlVisible(false)}
-        width={1200}
+        width={1400}
         className="sap-simulacao-modal"
         footer={
           <div className="sap-modal-footer">
@@ -1656,198 +1918,361 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
                 size="small" 
                 className="sap-button" 
                 icon={<FaSync style={{ fontSize: '11px' }} />}
+                onClick={() => setIsSimulacaoXmlVisible(false)}
               >
                 Voltar
               </Button>
               <Button 
                 size="small" 
-                className="sap-button" 
-                icon={<FaSync style={{ fontSize: '11px' }} />}
-              >
-                Voltar para síntese
-              </Button>
-              <Button 
-                size="small" 
+                type="primary"
                 className="sap-button" 
                 icon={<FaCheck style={{ fontSize: '11px' }} />}
+                loading={isSimulacaoLoading}
               >
-                Gravar parâmetros
-              </Button>
-              <Button 
-                size="small" 
-                className="sap-button" 
-                icon={<FaPlayCircle style={{ fontSize: '11px' }} />}
-              >
-                Executar simulação
+                Confirmar Conferência
               </Button>
             </div>
           </div>
         }
       >
-        <div className="sap-simulacao-content">
-          <div className="sap-info-section">
-            <div className="sap-info-row">
-              <div className="sap-info-field">
-                <span className="sap-info-label">Ctn proc.:</span>
-                <span className="sap-info-value">NF-e para pedido normal</span>
-              </div>
-            </div>
-            <div className="sap-info-row">
-              <div className="sap-info-field">
-                <span className="sap-info-label">Nº CNPJ do emissor da NF-e:</span>
-                <span className="sap-info-value">11663724000131</span>
-              </div>
-              <div className="sap-info-field">
-                <span className="sap-info-label">Nome do emissor da NF-e:</span>
-                <span className="sap-info-value">Consorcio Techint-Andrade Gutierrez (TE-AG)</span>
-              </div>
-              <div className="sap-info-field">
-                <span className="sap-info-label">Nº CNPJ/CPF do recebedor da NF-e:</span>
-                <span className="sap-info-value">99999999000191</span>
-              </div>
-            </div>
-            <div className="sap-info-row">
-              <div className="sap-info-field">
-                <span className="sap-info-label">Nome do destinat.NF-e:</span>
-                <span className="sap-info-value">NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL</span>
-              </div>
-              <div className="sap-info-field">
-                <span className="sap-info-label">Valor total incl.impostos:</span>
-                <span className="sap-info-value">2721.70</span>
-              </div>
-            </div>
-            <div className="sap-warning">
-              <span className="sap-warning-icon">⚠</span>
-              <span className="sap-warning-text">Saldo não é igual a zero: 0,39- Débito: 2.722,09 Crédito: 2.721,70 - Exibir ajuda</span>
-            </div>
+        {isSimulacaoLoading ? (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '400px' 
+          }}>
+            <Spin size="large" tip="Carregando dados da NF-e..." />
           </div>
+        ) : (
+          <ModalContent>
+            <InfoCard>
+              <CardSection>
+                <h4>Fornecedor</h4>
+                <div>
+                  <p><strong>CNPJ:</strong> {detalhesNFe?.nfeProc?.NFe?.infNFe?.emit?.CNPJ?.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') || 'N/A'}</p>
+                  <p><strong>Nome:</strong> {detalhesNFe?.nfeProc?.NFe?.infNFe?.emit?.xNome || 'N/A'}</p>
+                  <p><strong>IE:</strong> {detalhesNFe?.nfeProc?.NFe?.infNFe?.emit?.IE || 'N/A'}</p>
+                  <p><strong>Endereço:</strong> {`${detalhesNFe?.nfeProc?.NFe?.infNFe?.emit?.enderEmit?.xLgr || ''} ${detalhesNFe?.nfeProc?.NFe?.infNFe?.emit?.enderEmit?.nro || ''}, ${detalhesNFe?.nfeProc?.NFe?.infNFe?.emit?.enderEmit?.xBairro || ''}, ${detalhesNFe?.nfeProc?.NFe?.infNFe?.emit?.enderEmit?.xMun || ''} - ${detalhesNFe?.nfeProc?.NFe?.infNFe?.emit?.enderEmit?.UF || ''}`}</p>
+                </div>
+              </CardSection>
+              <CardSection>
+                <h4>Documento</h4>
+                <div>
+                  <p><strong>Número:</strong> {detalhesNFe?.nfeProc?.NFe?.infNFe?.ide?.nNF || 'N/A'}</p>
+                  <p><strong>Série:</strong> {detalhesNFe?.nfeProc?.NFe?.infNFe?.ide?.serie || 'N/A'}</p>
+                  <p><strong>Data Emissão:</strong> {new Date(detalhesNFe?.nfeProc?.NFe?.infNFe?.ide?.dhEmi || '').toLocaleString('pt-BR') || 'N/A'}</p>
+                  <p><strong>Natureza Op.:</strong> {detalhesNFe?.nfeProc?.NFe?.infNFe?.ide?.natOp || 'N/A'}</p>
+                  <p><strong>Protocolo:</strong> {detalhesNFe?.nfeProc?.protNFe?.infProt?.nProt || 'N/A'}</p>
+                </div>
+              </CardSection>
+              <CardSection>
+                <h4>Totais</h4>
+                <div>
+                  <p><strong>Valor Total:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vNF) || 0)}</p>
+                  <p><strong>Valor Produtos:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vProd) || 0)}</p>
+                  <p><strong>Valor ICMS:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vICMS) || 0)}</p>
+                  <p><strong>Valor IPI:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vIPI) || 0)}</p>
+                  <p><strong>Valor Frete:</strong> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vFrete) || 0)}</p>
+                </div>
+              </CardSection>
+            </InfoCard>
 
-          <div className="sap-tabs-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>
-              {/* <Tabs
-                type="card"
-                items={[
-                  { label: 'Pesquisa baseada no item', key: '1' },
-                  { label: 'Pesquisa global', key: '2' }
-                ]}
-                style={{
-                  marginBottom: 0,
-                  width: '100%'
-                }}
-                className="atribuir-itens-tabs"
-                activeKey={activeTab}
-                onChange={handleTabChange}
-                destroyInactiveTabPane
-              /> */}
-              <div style={{ display: 'flex', gap: '4px', marginLeft: 'auto', marginRight: '4px' }}>
-                <Button 
-                  size="small" 
-                  className="sap-icon-button"
-                  icon={<FaFilter style={{ fontSize: '11px' }} />}
-                />
-                <Button 
-                  size="small" 
-                  className="sap-icon-button"
-                  icon={<FaCog style={{ fontSize: '11px' }} />}
-                />
+            <ComparativoTotais>
+              <h4>
+                <FaBalanceScale style={{ fontSize: '14px' }} />
+                Comparativo de Totais
+              </h4>
+              <div className="totais-grid">
+                <div className="total-item">
+                  <span className="label">Valor Total</span>
+                  <span className="valor-nfe">
+                    NF-e: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vNF) || 0)}
+                  </span>
+                  <span className="valor-erp">
+                    ERP: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vNF) * 1.02 || 0)}
+                  </span>
+                  <span className="divergencia">
+                    <FaTimes style={{ fontSize: '12px' }} />
+                    Diferença: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vNF) * 0.02 || 0)}
+                  </span>
+                </div>
+                <div className="total-item">
+                  <span className="label">Valor ICMS</span>
+                  <span className="valor-nfe">
+                    NF-e: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vICMS) || 0)}
+                  </span>
+                  <span className="valor-erp">
+                    ERP: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vICMS) * 1.05 || 0)}
+                  </span>
+                  <span className="divergencia">
+                    <FaTimes style={{ fontSize: '12px' }} />
+                    Diferença: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vICMS) * 0.05 || 0)}
+                  </span>
+                </div>
+                <div className="total-item">
+                  <span className="label">Valor IPI</span>
+                  <span className="valor-nfe">
+                    NF-e: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vIPI) || 0)}
+                  </span>
+                  <span className="valor-erp">
+                    ERP: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vIPI) * 0.95 || 0)}
+                  </span>
+                  <span className="divergencia">
+                    <FaTimes style={{ fontSize: '12px' }} />
+                    Diferença: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(detalhesNFe?.nfeProc?.NFe?.infNFe?.total?.ICMSTot?.vIPI) * -0.05 || 0)}
+                  </span>
+                </div>
               </div>
-            </div>
-          </div>
+            </ComparativoTotais>
 
-          <div className="sap-table-section">
-            <Table
-              columns={[
-                { 
-                  title: 'Nº do item', 
-                  dataIndex: 'numero', 
-                  width: 80,
-                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
-                },
-                { 
-                  title: 'Nº do pedido', 
-                  dataIndex: 'pedido', 
-                  width: 120,
-                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
-                },
-                { 
-                  title: 'Item do pedido', 
-                  dataIndex: 'itemPedido', 
-                  width: 100,
-                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
-                },
-                { 
-                  title: 'Qtd.NF-e convertida', 
-                  dataIndex: 'quantidade', 
-                  width: 120, 
-                  align: 'right',
-                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
-                },
-                { 
-                  title: 'Unidade de pedido', 
-                  dataIndex: 'unidade', 
-                  width: 120 
-                },
-                { 
-                  title: 'Pedido - nº de material', 
-                  dataIndex: 'material', 
-                  width: 150,
-                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
-                },
-                { 
-                  title: 'Pedido - texto breve', 
-                  dataIndex: 'descricao', 
-                  width: 300 
-                },
-                { 
-                  title: 'CFOP', 
-                  dataIndex: 'cfop', 
-                  width: 80,
-                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
-                },
-                { 
-                  title: 'Cód.imposto', 
-                  dataIndex: 'codImposto', 
-                  width: 100,
-                  render: (text) => <span style={{ fontFamily: 'Courier New, monospace' }}>{text}</span>
-                }
-              ]}
-              dataSource={[
-                {
-                  key: '1',
-                  numero: '1',
-                  pedido: '4500210636',
-                  itemPedido: '10',
-                  quantidade: '36',
-                  unidade: 'CDA',
-                  material: '0290-B-2315-06 B',
-                  descricao: 'PETROCHEMICAL NAPHTHA PUMP-B',
-                  cfop: '2102AA',
-                  codImposto: 'Z3'
-                }
-              ]}
+            <StyledTable
               size="small"
               pagination={false}
-              className="atribuir-itens-table"
-              scroll={{ y: '200px', x: 'max-content' }}
-              rowSelection={{
-                type: 'radio',
-                columnWidth: 28,
-                selectedRowKeys: ['1']
-              }}
+              scroll={{ y: 400 }}
+              columns={[
+                { 
+                  title: 'Item', 
+                  dataIndex: 'item', 
+                  width: 60,
+                  fixed: 'left',
+                  align: 'center'
+                },
+                { 
+                  title: 'Código Material', 
+                  children: [
+                    {
+                      title: 'NF-e',
+                      dataIndex: 'codMatNfe',
+                      width: 120,
+                      render: (text: string, record: ItemConferencia) => renderDivergentCode({ text, record })
+                    },
+                    {
+                      title: 'ERP',
+                      dataIndex: 'codMatErp',
+                      width: 120
+                    }
+                  ]
+                },
+                {
+                  title: 'Descrição',
+                  children: [
+                    {
+                      title: 'NF-e',
+                      dataIndex: 'descNfe',
+                      width: 200
+                    },
+                    {
+                      title: 'ERP',
+                      dataIndex: 'descErp',
+                      width: 200
+                    }
+                  ]
+                },
+                {
+                  title: 'NCM',
+                  dataIndex: 'ncm',
+                  width: 100,
+                  align: 'center'
+                },
+                {
+                  title: 'CFOP',
+                  dataIndex: 'cfop',
+                  width: 80,
+                  align: 'center'
+                },
+                {
+                  title: 'Quantidade',
+                  children: [
+                    {
+                      title: 'NF-e',
+                      dataIndex: 'qtdNfe',
+                      width: 100,
+                      align: 'right',
+                      render: (text: number, record: ItemConferencia) => renderDivergentQuantity({ text, record })
+                    },
+                    {
+                      title: 'ERP',
+                      dataIndex: 'qtdErp',
+                      width: 100,
+                      align: 'right',
+                      render: (value: number) => renderQuantity({ value })
+                    }
+                  ]
+                },
+                {
+                  title: 'Valor Unitário',
+                  children: [
+                    {
+                      title: 'NF-e',
+                      dataIndex: 'vlrUnitNfe',
+                      width: 100,
+                      align: 'right',
+                      render: (text: number, record: ItemConferencia) => renderDivergentValue({ text, record })
+                    },
+                    {
+                      title: 'ERP',
+                      dataIndex: 'vlrUnitErp',
+                      width: 100,
+                      align: 'right',
+                      render: (value: number) => renderValue({ value })
+                    }
+                  ]
+                },
+                {
+                  title: 'ICMS',
+                  children: [
+                    {
+                      title: 'Base',
+                      dataIndex: 'baseIcms',
+                      width: 100,
+                      align: 'right',
+                      render: (value: number) => renderValue({ value })
+                    },
+                    {
+                      title: 'Alíq',
+                      dataIndex: 'aliqIcms',
+                      width: 70,
+                      align: 'right',
+                      render: (value: number) => renderPercentage({ value })
+                    },
+                    {
+                      title: 'Valor',
+                      dataIndex: 'vlrIcms',
+                      width: 100,
+                      align: 'right',
+                      render: (value: number) => renderValue({ value })
+                    }
+                  ]
+                },
+                {
+                  title: 'IPI',
+                  children: [
+                    {
+                      title: 'Base',
+                      dataIndex: 'baseIpi',
+                      width: 100,
+                      align: 'right',
+                      render: (value: number) => renderValue({ value })
+                    },
+                    {
+                      title: 'Alíq',
+                      dataIndex: 'aliqIpi',
+                      width: 70,
+                      align: 'right',
+                      render: (value: number) => renderPercentage({ value })
+                    },
+                    {
+                      title: 'Valor',
+                      dataIndex: 'vlrIpi',
+                      width: 100,
+                      align: 'right',
+                      render: (value: number) => renderValue({ value })
+                    }
+                  ]
+                }
+              ]}
+              dataSource={detalhesNFe?.nfeProc?.NFe?.infNFe?.det?.map((item: any, index: number) => ({
+                key: String(index + 1),
+                item: item.nItem || String(index + 1),
+                codMatNfe: item.prod.cProd || 'N/A',
+                codMatErp: item.prod.cProd || 'N/A', // Será substituído pelo valor do ERP
+                descNfe: item.prod.xProd || 'N/A',
+                descErp: item.prod.xProd || 'N/A', // Será substituído pelo valor do ERP
+                ncm: item.prod.NCM || 'N/A',
+                cfop: item.prod.CFOP || 'N/A',
+                qtdNfe: Number(item.prod.qCom) || 0,
+                qtdErp: Number(item.prod.qCom) || 0, // Será substituído pelo valor do ERP
+                vlrUnitNfe: Number(item.prod.vUnCom) || 0,
+                vlrUnitErp: Number(item.prod.vUnCom) || 0, // Será substituído pelo valor do ERP
+                baseIcms: Number(item.imposto?.ICMS?.vBC) || 0,
+                aliqIcms: Number(item.imposto?.ICMS?.pICMS) || 0,
+                vlrIcms: Number(item.imposto?.ICMS?.vICMS) || 0,
+                baseIpi: Number(item.imposto?.IPI?.vBC) || 0,
+                aliqIpi: Number(item.imposto?.IPI?.pIPI) || 0,
+                vlrIpi: Number(item.imposto?.IPI?.vIPI) || 0,
+                divergenciaCodMat: false, // Será calculado quando tivermos os dados do ERP
+                divergenciaQtd: false, // Será calculado quando tivermos os dados do ERP
+                divergenciaVlrUnit: false // Será calculado quando tivermos os dados do ERP
+              })) || []}
             />
-          </div>
 
-          <div className="sap-bottom-tabs">
-            <Tabs
-              type="card"
-              items={modalTabItems}
-              className="modal-tabs"
-              activeKey={modalActiveTab}
-              onChange={handleModalTabChange}
-              destroyInactiveTabPane
-            />
-          </div>
-        </div>
+            <CriticasPanel>
+              <h4>
+                <FaTimes style={{ fontSize: '14px' }} />
+                Críticas Encontradas
+              </h4>
+              <ul>
+                {detalhesNFe?.nfeProc?.NFe?.infNFe?.det?.map((item: any, index: number) => {
+                  const criticas = [];
+                  
+                  // Críticas existentes
+                  if (Number(item.prod.qCom) === 0) {
+                    criticas.push(`Item ${index + 1}: Quantidade zerada`);
+                  }
+                  if (Number(item.prod.vUnCom) === 0) {
+                    criticas.push(`Item ${index + 1}: Valor unitário zerado`);
+                  }
+                  if (!item.prod.NCM) {
+                    criticas.push(`Item ${index + 1}: NCM não informado`);
+                  }
+                  if (!item.prod.CFOP) {
+                    criticas.push(`Item ${index + 1}: CFOP não informado`);
+                  }
+                  if (!item.imposto?.ICMS?.CST && !item.imposto?.ICMS?.CSOSN) {
+                    criticas.push(`Item ${index + 1}: CST/CSOSN do ICMS não informado`);
+                  }
+                  if (item.imposto?.ICMS?.vBC > 0 && !item.imposto?.ICMS?.pICMS) {
+                    criticas.push(`Item ${index + 1}: Base de ICMS informada sem alíquota`);
+                  }
+                  if (item.imposto?.IPI?.vBC > 0 && !item.imposto?.IPI?.pIPI) {
+                    criticas.push(`Item ${index + 1}: Base de IPI informada sem alíquota`);
+                  }
+
+                  // Novas críticas fiscais
+                  if (item.imposto?.ICMS?.pICMS === 18 && item.imposto?.ICMS?.CST !== '00') {
+                    criticas.push(`Item ${index + 1}: Alíquota de ICMS 18% incompatível com CST ${item.imposto?.ICMS?.CST}`);
+                  }
+
+                  if (item.prod.CFOP === '6102' && item.imposto?.ICMS?.CST !== '00') {
+                    criticas.push(`Item ${index + 1}: CFOP 6102 exige CST 00 - Tributação normal`);
+                  }
+
+                  if (Number(item.imposto?.ICMS?.vICMS || 0) !== Number(item.imposto?.ICMS?.vBC || 0) * (Number(item.imposto?.ICMS?.pICMS || 0) / 100)) {
+                    criticas.push(`Item ${index + 1}: Valor do ICMS calculado divergente`);
+                  }
+
+                  if (item.imposto?.IPI?.CST === '50' && Number(item.imposto?.IPI?.pIPI || 0) === 0) {
+                    criticas.push(`Item ${index + 1}: IPI com CST 50 (Tributado) mas alíquota zerada`);
+                  }
+
+                  if (item.prod.NCM?.startsWith('84') && !item.imposto?.IPI?.CST) {
+                    criticas.push(`Item ${index + 1}: NCM de máquinas e equipamentos (Cap. 84) sem tributação de IPI definida`);
+                  }
+
+                  if (Number(item.prod.vUnCom || 0) * 1.5 < Number(item.prod.vProd || 0)) {
+                    criticas.push(`Item ${index + 1}: Valor total superior a 150% do valor unitário - possível erro de cálculo`);
+                  }
+
+                  // Divergências com ERP (fictícias)
+                  if (index % 2 === 0) { // Simulando divergências em alguns itens
+                    criticas.push(`Item ${index + 1}: Divergência de alíquota ICMS - NF-e: ${item.imposto?.ICMS?.pICMS}% / ERP: 18%`);
+                    criticas.push(`Item ${index + 1}: Base de cálculo ICMS divergente do ERP`);
+                  }
+
+                  if (index % 3 === 0) { // Mais divergências fictícias
+                    criticas.push(`Item ${index + 1}: CST do PIS/COFINS divergente do cadastro do material`);
+                    criticas.push(`Item ${index + 1}: Natureza da operação incompatível com CFOP utilizado`);
+                  }
+                  
+                  return criticas.map((critica, idx) => (
+                    <li key={`${index}-${idx}`}>{critica}</li>
+                  ));
+                })}
+              </ul>
+            </CriticasPanel>
+          </ModalContent>
+        )}
       </Modal>
     </div>
   );
