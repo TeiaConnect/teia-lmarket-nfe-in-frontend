@@ -105,6 +105,7 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
 
   const [itensPedidoDetalhado, setItensPedidoDetalhado] = useState<ItemPedidoDetalhado[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<ItemPedidoDetalhado[]>([]);
 
   useEffect(() => {
     if (chaveAcesso) {
@@ -813,12 +814,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     }
   };
 
-  useEffect(() => {
-    if (searchParams.numeroPedido) {
-      carregarItensPedido(searchParams.numeroPedido);
-    }
-  }, [searchParams.numeroPedido]);
-
   const PesquisaModal: React.FC<PesquisaModalProps> = ({ 
     visible, 
     onCancel, 
@@ -829,6 +824,66 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
   }) => {
     const [itensPedidoDetalhado, setItensPedidoDetalhado] = useState<ItemPedidoDetalhado[]>([]);
     const [loading, setLoading] = useState(false);
+    const [selectedItems, setSelectedItems] = useState<ItemPedidoDetalhado[]>([]);
+
+    const handlePesquisar = async () => {
+      if (searchParams.numeroPedido) {
+        setLoading(true);
+        try {
+          const response = await fetch(`/api/pedidos/itens?numeroPedido=${searchParams.numeroPedido}`);
+          const data = await response.json();
+
+          if (data && Array.isArray(data)) {
+            const itensFormatados: ItemPedidoDetalhado[] = data.map((item: any, index: number) => ({
+              key: String(index + 1),
+              numeroItem: item.numero_item || '',
+              materialERP: item.cod_material_erp || '',
+              descricaoMaterial: item.cod_material_fornecedor || '',
+              quantidade: Number(item.quantidade) || 0,
+              unidadeMedida: 'UN',
+              valorUnitario: Number(item.preco_unitario) || 0,
+              valorTotal: Number(item.valor_total) || 0,
+            }));
+
+            setItensPedidoDetalhado(itensFormatados);
+          } else {
+            setItensPedidoDetalhado([]);
+            message.warning('Nenhum item encontrado para este pedido');
+          }
+        } catch (error) {
+          console.error('Erro ao carregar itens do pedido:', error);
+          message.error('Erro ao carregar itens do pedido');
+          setItensPedidoDetalhado([]);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    const handleItemSelect = (selectedRowKeys: React.Key[], selectedRows: ItemPedidoDetalhado[]) => {
+      setSelectedItems(selectedRows);
+    };
+
+    const handleAdicionarItens = () => {
+      if (selectedItems.length === 0) {
+        message.warning('Selecione pelo menos um item para adicionar');
+        return;
+      }
+
+      const novosItensPedido: ItemPedido[] = selectedItems.map(item => ({
+        key: String(itensPedido.length + 1),
+        numeroPedido: searchParams.numeroPedido,
+        itemPedido: item.numeroItem,
+        codigoMaterialERP: item.materialERP,
+        descricaoMaterialERP: item.descricaoMaterial,
+        quantidadePedido: item.quantidade,
+        unidadeMedidaERP: item.unidadeMedida
+      }));
+
+      setItensPedido([...itensPedido, ...novosItensPedido]);
+      message.success(`${selectedItems.length} item(ns) adicionado(s) com sucesso`);
+      setSelectedItems([]);
+    };
 
     const getModalTitle = () => {
       switch (tipoPesquisa) {
@@ -842,44 +897,6 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
           return '';
       }
     };
-
-    const carregarItensPedido = async (numeroPedido: string) => {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/pedidos/itens?numeroPedido=${numeroPedido}`);
-        const data = await response.json();
-
-        if (data && Array.isArray(data)) {
-          const itensFormatados: ItemPedidoDetalhado[] = data.map((item: any, index: number) => ({
-            key: String(index + 1),
-            numeroItem: item.numero_item || '',
-            materialERP: item.cod_material_erp || '',
-            descricaoMaterial: item.cod_material_fornecedor || '',
-            quantidade: Number(item.quantidade) || 0,
-            unidadeMedida: 'UN',
-            valorUnitario: Number(item.preco_unitario) || 0,
-            valorTotal: Number(item.valor_total) || 0,
-          }));
-
-          setItensPedidoDetalhado(itensFormatados);
-        } else {
-          setItensPedidoDetalhado([]);
-          message.warning('Nenhum item encontrado para este pedido');
-        }
-      } catch (error) {
-        console.error('Erro ao carregar itens do pedido:', error);
-        message.error('Erro ao carregar itens do pedido');
-        setItensPedidoDetalhado([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    useEffect(() => {
-      if (searchParams.numeroPedido) {
-        carregarItensPedido(searchParams.numeroPedido);
-      }
-    }, [searchParams.numeroPedido]);
 
     return (
       <Modal
@@ -918,12 +935,18 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
                 size="small" 
                 className="sap-button" 
                 icon={<FaSearch style={{ fontSize: '11px' }} />}
-                onClick={() => {
-                  onSearch(tipoPesquisa);
-                  onCancel();
-                }}
+                onClick={handlePesquisar}
               >
                 Pesquisar
+              </Button>
+              <Button 
+                size="small" 
+                className="sap-button" 
+                icon={<FaCheck style={{ fontSize: '11px' }} />}
+                onClick={handleAdicionarItens}
+                disabled={selectedItems.length === 0}
+              >
+                Adicionar Selecionados
               </Button>
             </div>
           </div>
@@ -966,7 +989,7 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
             </div>
           </div>
 
-          {searchParams.numeroPedido && (
+          {searchParams.numeroPedido && itensPedidoDetalhado.length > 0 && (
             <div style={{ marginTop: 16 }}>
               <h3>Itens do Pedido {searchParams.numeroPedido}</h3>
               <Table
@@ -976,6 +999,11 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
                 size="small"
                 pagination={false}
                 scroll={{ y: 300 }}
+                rowSelection={{
+                  type: 'checkbox',
+                  onChange: handleItemSelect,
+                  selectedRowKeys: selectedItems.map(item => item.key)
+                }}
               />
             </div>
           )}
