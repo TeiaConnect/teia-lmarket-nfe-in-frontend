@@ -689,55 +689,55 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     size: 'small' as const
   };
 
-  const mainTabItems: TabItem[] = [
-    {
-      key: '1',
-      label: 'Itens NF-e Pendentes',
-      children: (
-        <div className="sap-tab-content">
-          <Table
-            columns={colunasNFe}
-            dataSource={itensNFe}
-            rowSelection={{
-              type: 'radio',
-              onChange: handleNFeItemSelect
-            }}
-            pagination={false}
-          />
-        </div>
-      )
-    },
-    {
-      key: '2',
-      label: 'Itens do Pedido Disponíveis',
-      children: (
-        <div className="sap-tab-content">
-          <Table
-            columns={colunasPedido}
-            dataSource={itensPedido}
-            rowSelection={{
-              type: 'radio',
-              onChange: handlePedidoItemSelect
-            }}
-            pagination={false}
-          />
-        </div>
-      )
-    },
-    {
-      key: '3',
-      label: 'Itens NF-e Atribuídos',
-      children: (
-        <div className="sap-tab-content">
-          <Table
-            columns={colunasAtribuidos}
-            dataSource={itensAtribuidos}
-            pagination={false}
-          />
-        </div>
-      )
-    }
-  ];
+  // const mainTabItems: TabItem[] = [
+  //   {
+  //     key: '1',
+  //     label: 'Itens NF-e Pendentes',
+  //     children: (
+  //       <div className="sap-tab-content">
+  //         <Table
+  //           columns={colunasNFe}
+  //           dataSource={itensNFe}
+  //           rowSelection={{
+  //             type: 'radio',
+  //             onChange: handleNFeItemSelect
+  //           }}
+  //           pagination={false}
+  //         />
+  //       </div>
+  //     )
+  //   },
+  //   {
+  //     key: '2',
+  //     label: 'Itens do Pedido Disponíveis',
+  //     children: (
+  //       <div className="sap-tab-content">
+  //         <Table
+  //           columns={colunasPedido}
+  //           dataSource={itensPedido}
+  //           rowSelection={{
+  //             type: 'radio',
+  //             onChange: handlePedidoItemSelect
+  //           }}
+  //           pagination={false}
+  //         />
+  //       </div>
+  //     )
+  //   },
+  //   {
+  //     key: '3',
+  //     label: 'Itens NF-e Atribuídos',
+  //     children: (
+  //       <div className="sap-tab-content">
+  //         <Table
+  //           columns={colunasAtribuidos}
+  //           dataSource={itensAtribuidos}
+  //           pagination={false}
+  //         />
+  //       </div>
+  //     )
+  //   }
+  // ];
 
   const modalTabItems = [
     {
@@ -826,6 +826,75 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
       } else {
         setItensPedidoDetalhado([]);
         message.warning('Nenhum item encontrado para este pedido');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar itens do pedido:', error);
+      message.error('Erro ao carregar itens do pedido');
+      setItensPedidoDetalhado([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePesquisar = async () => {
+    setLoading(true);
+    try {
+      let queryParams = new URLSearchParams();
+      
+      switch (tipoPesquisa) {
+        case '1': // Procurar Pedido
+          if (searchParams.numeroPedido) {
+            queryParams.append('numeroPedido', searchParams.numeroPedido);
+          } else {
+            message.warning('Por favor, informe o número do pedido');
+            return;
+          }
+          break;
+        case '2': // Procurar Pedido e Item
+          if (searchParams.numeroPedido) {
+            queryParams.append('numeroPedido', searchParams.numeroPedido);
+          } else {
+            message.warning('Por favor, informe o número do pedido');
+            return;
+          }
+          if (searchParams.itemPedido) {
+            queryParams.append('itemPedido', searchParams.itemPedido);
+          }
+          break;
+        case '3': // Pesquisa Ampliada
+          if (searchParams.orgCompras) queryParams.append('orgCompras', searchParams.orgCompras);
+          if (searchParams.grpCompras) queryParams.append('grpCompras', searchParams.grpCompras);
+          if (searchParams.cnpjCpf) queryParams.append('cnpjCpf', searchParams.cnpjCpf);
+          if (searchParams.cnpjDest) queryParams.append('cnpjDest', searchParams.cnpjDest);
+          if (searchParams.nMatErp) queryParams.append('nMatErp', searchParams.nMatErp);
+          if (searchParams.nMatForn) queryParams.append('nMatForn', searchParams.nMatForn);
+          if (searchParams.ncmCodigo) queryParams.append('ncmCodigo', searchParams.ncmCodigo);
+          if (searchParams.dataCriacaoDe) queryParams.append('dataCriacaoDe', searchParams.dataCriacaoDe);
+          if (searchParams.dataCriacaoAte) queryParams.append('dataCriacaoAte', searchParams.dataCriacaoAte);
+          if (searchParams.dataRecebimentoDe) queryParams.append('dataRecebimentoDe', searchParams.dataRecebimentoDe);
+          if (searchParams.dataRecebimentoAte) queryParams.append('dataRecebimentoAte', searchParams.dataRecebimentoAte);
+          break;
+      }
+
+      const response = await fetch(`/api/pedidos/itens?${queryParams.toString()}`);
+      const data = await response.json();
+
+      if (data && Array.isArray(data)) {
+        const itensFormatados: ItemPedidoDetalhado[] = data.map((item: any, index: number) => ({
+          key: String(index + 1),
+          numeroItem: item.numero_item || '',
+          materialERP: item.cod_material_erp || '',
+          descricaoMaterial: item.cod_material_fornecedor || '',
+          quantidade: Number(item.quantidade) || 0,
+          unidadeMedida: item.unidade_medida || 'UN',
+          valorUnitario: Number(item.preco_unitario) || 0,
+          valorTotal: Number(item.valor_total) || 0,
+        }));
+
+        setItensPedidoDetalhado(itensFormatados);
+      } else {
+        setItensPedidoDetalhado([]);
+        message.warning('Nenhum item encontrado');
       }
     } catch (error) {
       console.error('Erro ao carregar itens do pedido:', error);
@@ -1655,14 +1724,21 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
 
           <div className="sap-tabs-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>
-              <Tabs
+              {/* <Tabs
                 type="card"
-                items={mainTabItems}
+                items={[
+                  { label: 'Pesquisa baseada no item', key: '1' },
+                  { label: 'Pesquisa global', key: '2' }
+                ]}
+                style={{
+                  marginBottom: 0,
+                  width: '100%'
+                }}
                 className="atribuir-itens-tabs"
                 activeKey={activeTab}
                 onChange={handleTabChange}
                 destroyInactiveTabPane
-              />
+              /> */}
               <div style={{ display: 'flex', gap: '4px', marginLeft: 'auto', marginRight: '4px' }}>
                 <Button 
                   size="small" 

@@ -13,7 +13,7 @@ export async function GET(request: Request) {
 
     await client.connect();
     const database = client.db("simplifica");
-    const collection = database.collection("EKPO");
+    const collection = database.collection("ekpo");
 
     let query: any = {};
     
