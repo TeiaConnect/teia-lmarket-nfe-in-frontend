@@ -65,6 +65,17 @@ interface SearchParams {
   numeroPedido: string;
   itemPedido: string;
   codMaterial: string;
+  orgCompras: string;
+  grpCompras: string;
+  cnpjCpf: string;
+  cnpjDest: string;
+  nMatErp: string;
+  nMatForn: string;
+  ncmCodigo: string;
+  dataCriacaoDe: string;
+  dataCriacaoAte: string;
+  dataRecebimentoDe: string;
+  dataRecebimentoAte: string;
 }
 
 interface PesquisaModalProps {
@@ -97,7 +108,18 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
   const [searchParams, setSearchParams] = useState<SearchParams>({
     numeroPedido: '',
     itemPedido: '',
-    codMaterial: ''
+    codMaterial: '',
+    orgCompras: '',
+    grpCompras: '',
+    cnpjCpf: '',
+    cnpjDest: '',
+    nMatErp: '',
+    nMatForn: '',
+    ncmCodigo: '',
+    dataCriacaoDe: '',
+    dataCriacaoAte: '',
+    dataRecebimentoDe: '',
+    dataRecebimentoAte: ''
   });
 
   const [selectedNFeItem, setSelectedNFeItem] = useState<ItemNFe | null>(null);
@@ -954,44 +976,251 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
       >
         <div className="sap-pesquisa-content">
           <div className="sap-form-section">
-            <div className="sap-form-row">
-              <div className="sap-form-field">
-                <label>Nº do pedido:</label>
-                <Input
-                  value={searchParams.numeroPedido}
-                  onChange={(e) => setSearchParams({ ...searchParams, numeroPedido: e.target.value })}
-                  style={{ width: '200px' }}
-                  placeholder="Digite o número do pedido"
-                />
-              </div>
-              {(tipoPesquisa === '2' || tipoPesquisa === '3') && (
+            {tipoPesquisa !== '3' && (
+              <div className="sap-form-row">
                 <div className="sap-form-field">
-                  <label>Item do pedido:</label>
+                  <label>Nº do pedido:</label>
                   <Input
-                    value={searchParams.itemPedido}
-                    onChange={(e) => setSearchParams({ ...searchParams, itemPedido: e.target.value })}
-                    style={{ width: '100px' }}
-                    placeholder="Digite o item"
-                  />
-                </div>
-              )}
-              {tipoPesquisa === '3' && (
-                <div className="sap-form-field">
-                  <label>Material:</label>
-                  <Input
-                    value={searchParams.codMaterial}
-                    onChange={(e) => setSearchParams({ ...searchParams, codMaterial: e.target.value })}
+                    value={searchParams.numeroPedido}
+                    onChange={(e) => setSearchParams({ ...searchParams, numeroPedido: e.target.value })}
                     style={{ width: '200px' }}
-                    placeholder="Digite o código do material"
+                    placeholder="Digite o número do pedido"
                   />
                 </div>
-              )}
-            </div>
+                {tipoPesquisa === '2' && (
+                  <div className="sap-form-field">
+                    <label>Item do pedido:</label>
+                    <Input
+                      value={searchParams.itemPedido}
+                      onChange={(e) => setSearchParams({ ...searchParams, itemPedido: e.target.value })}
+                      style={{ width: '100px' }}
+                      placeholder="Digite o item"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {tipoPesquisa === '3' && (
+              <>
+                <div style={{ 
+                  display: 'grid', 
+                  gap: '12px',
+                  padding: '16px'
+                }}>
+                  <div style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '12px'
+                  }}>
+                    <div className="sap-form-field">
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                        color: '#666'
+                      }}>
+                        Org. compras:
+                      </label>
+                      <Input
+                        value={searchParams.orgCompras}
+                        onChange={(e) => setSearchParams({ ...searchParams, orgCompras: e.target.value })}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+
+                    <div className="sap-form-field">
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                        color: '#666'
+                      }}>
+                        Grp. compra:
+                      </label>
+                      <Input
+                        value={searchParams.grpCompras}
+                        onChange={(e) => setSearchParams({ ...searchParams, grpCompras: e.target.value })}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '12px'
+                  }}>
+                    <div className="sap-form-field">
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                        color: '#666'
+                      }}>
+                        CNPJ/CPF:
+                      </label>
+                      <Input
+                        value={searchParams.cnpjCpf}
+                        onChange={(e) => setSearchParams({ ...searchParams, cnpjCpf: e.target.value })}
+                        style={{ width: '100%' }}
+                        placeholder="07.352.128/0001-63"
+                      />
+                    </div>
+
+                    <div className="sap-form-field">
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                        color: '#666'
+                      }}>
+                        CNPJ dest.:
+                      </label>
+                      <Input
+                        value={searchParams.cnpjDest}
+                        onChange={(e) => setSearchParams({ ...searchParams, cnpjDest: e.target.value })}
+                        style={{ width: '100%' }}
+                        placeholder="86.900.925/0001-04"
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '12px'
+                  }}>
+                    <div className="sap-form-field">
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                        color: '#666'
+                      }}>
+                        Nº mat.ERP:
+                      </label>
+                      <Input
+                        value={searchParams.nMatErp}
+                        onChange={(e) => setSearchParams({ ...searchParams, nMatErp: e.target.value })}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+
+                    <div className="sap-form-field">
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                        color: '#666'
+                      }}>
+                        Nº mat.forn.:
+                      </label>
+                      <Input
+                        value={searchParams.nMatForn}
+                        onChange={(e) => setSearchParams({ ...searchParams, nMatForn: e.target.value })}
+                        style={{ width: '100%' }}
+                        placeholder="CFOP6101"
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    display: 'grid',
+                    gridTemplateColumns: '1fr',
+                    gap: '12px'
+                  }}>
+                    <div className="sap-form-field">
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                        color: '#666'
+                      }}>
+                        NCM Código:
+                      </label>
+                      <Input
+                        value={searchParams.ncmCodigo}
+                        onChange={(e) => setSearchParams({ ...searchParams, ncmCodigo: e.target.value })}
+                        style={{ width: '100%' }}
+                        placeholder="64029990"
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    display: 'grid',
+                    gap: '12px'
+                  }}>
+                    <div className="sap-form-field">
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                        color: '#666'
+                      }}>
+                        Data de cria.:
+                      </label>
+                      <div style={{ 
+                        display: 'grid',
+                        gridTemplateColumns: '1fr auto 1fr',
+                        gap: '8px',
+                        alignItems: 'center'
+                      }}>
+                        <Input
+                          type="date"
+                          value={searchParams.dataCriacaoDe}
+                          onChange={(e) => setSearchParams({ ...searchParams, dataCriacaoDe: e.target.value })}
+                          style={{ width: '100%' }}
+                        />
+                        <span style={{ color: '#666' }}>até</span>
+                        <Input
+                          type="date"
+                          value={searchParams.dataCriacaoAte}
+                          onChange={(e) => setSearchParams({ ...searchParams, dataCriacaoAte: e.target.value })}
+                          style={{ width: '100%' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="sap-form-field">
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px',
+                        fontSize: '12px',
+                        color: '#666'
+                      }}>
+                        Data de re.:
+                      </label>
+                      <div style={{ 
+                        display: 'grid',
+                        gridTemplateColumns: '1fr auto 1fr',
+                        gap: '8px',
+                        alignItems: 'center'
+                      }}>
+                        <Input
+                          type="date"
+                          value={searchParams.dataRecebimentoDe}
+                          onChange={(e) => setSearchParams({ ...searchParams, dataRecebimentoDe: e.target.value })}
+                          style={{ width: '100%' }}
+                        />
+                        <span style={{ color: '#666' }}>até</span>
+                        <Input
+                          type="date"
+                          value={searchParams.dataRecebimentoAte}
+                          onChange={(e) => setSearchParams({ ...searchParams, dataRecebimentoAte: e.target.value })}
+                          style={{ width: '100%' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {searchParams.numeroPedido && itensPedidoDetalhado.length > 0 && (
+          {itensPedidoDetalhado.length > 0 && (
             <div style={{ marginTop: 16 }}>
-              <h3>Itens do Pedido {searchParams.numeroPedido}</h3>
               <Table
                 columns={colunasItensPedido}
                 dataSource={itensPedidoDetalhado}
