@@ -46,6 +46,17 @@ interface ItemAtribuido {
   descricaoMaterialERP: string;
 }
 
+interface ItemPedidoDetalhado {
+  key: string;
+  numeroItem: string;
+  materialERP: string;
+  descricaoMaterial: string;
+  quantidade: number;
+  unidadeMedida: string;
+  valorUnitario: number;
+  valorTotal: number;
+}
+
 export interface AtribuirItensPedidoProps {
   chaveAcesso?: string;
 }
@@ -91,6 +102,9 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
 
   const [selectedNFeItem, setSelectedNFeItem] = useState<ItemNFe | null>(null);
   const [selectedPedidoItem, setSelectedPedidoItem] = useState<ItemPedido | null>(null);
+
+  const [itensPedidoDetalhado, setItensPedidoDetalhado] = useState<ItemPedidoDetalhado[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (chaveAcesso) {
@@ -715,6 +729,96 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     }
   ];
 
+  const colunasItensPedido: ColumnsType<ItemPedidoDetalhado> = [
+    {
+      title: 'Nº Item',
+      dataIndex: 'numeroItem',
+      key: 'numeroItem',
+      width: 80,
+      align: 'center',
+    },
+    {
+      title: 'Material ERP',
+      dataIndex: 'materialERP',
+      key: 'materialERP',
+      width: 120,
+    },
+    {
+      title: 'Descrição',
+      dataIndex: 'descricaoMaterial',
+      key: 'descricaoMaterial',
+      width: 200,
+    },
+    {
+      title: 'Quantidade',
+      dataIndex: 'quantidade',
+      key: 'quantidade',
+      width: 100,
+      align: 'right',
+    },
+    {
+      title: 'Unidade',
+      dataIndex: 'unidadeMedida',
+      key: 'unidadeMedida',
+      width: 80,
+      align: 'center',
+    },
+    {
+      title: 'Valor Unitário',
+      dataIndex: 'valorUnitario',
+      key: 'valorUnitario',
+      width: 120,
+      align: 'right',
+      render: (value) => `R$ ${value.toFixed(2)}`,
+    },
+    {
+      title: 'Valor Total',
+      dataIndex: 'valorTotal',
+      key: 'valorTotal',
+      width: 120,
+      align: 'right',
+      render: (value) => `R$ ${value.toFixed(2)}`,
+    },
+  ];
+
+  const carregarItensPedido = async (numeroPedido: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/pedidos/itens?numeroPedido=${numeroPedido}`);
+      const data = await response.json();
+
+      if (data && Array.isArray(data)) {
+        const itensFormatados: ItemPedidoDetalhado[] = data.map((item: any, index: number) => ({
+          key: String(index + 1),
+          numeroItem: item.numero_item || '',
+          materialERP: item.cod_material_erp || '',
+          descricaoMaterial: item.cod_material_fornecedor || '',
+          quantidade: Number(item.quantidade) || 0,
+          unidadeMedida: 'UN',
+          valorUnitario: Number(item.preco_unitario) || 0,
+          valorTotal: Number(item.valor_total) || 0,
+        }));
+
+        setItensPedidoDetalhado(itensFormatados);
+      } else {
+        setItensPedidoDetalhado([]);
+        message.warning('Nenhum item encontrado para este pedido');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar itens do pedido:', error);
+      message.error('Erro ao carregar itens do pedido');
+      setItensPedidoDetalhado([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (searchParams.numeroPedido) {
+      carregarItensPedido(searchParams.numeroPedido);
+    }
+  }, [searchParams.numeroPedido]);
+
   const PesquisaModal: React.FC<PesquisaModalProps> = ({ 
     visible, 
     onCancel, 
@@ -723,6 +827,9 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
     searchParams, 
     setSearchParams 
   }) => {
+    const [itensPedidoDetalhado, setItensPedidoDetalhado] = useState<ItemPedidoDetalhado[]>([]);
+    const [loading, setLoading] = useState(false);
+
     const getModalTitle = () => {
       switch (tipoPesquisa) {
         case '1':
@@ -735,6 +842,44 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
           return '';
       }
     };
+
+    const carregarItensPedido = async (numeroPedido: string) => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/pedidos/itens?numeroPedido=${numeroPedido}`);
+        const data = await response.json();
+
+        if (data && Array.isArray(data)) {
+          const itensFormatados: ItemPedidoDetalhado[] = data.map((item: any, index: number) => ({
+            key: String(index + 1),
+            numeroItem: item.numero_item || '',
+            materialERP: item.cod_material_erp || '',
+            descricaoMaterial: item.cod_material_fornecedor || '',
+            quantidade: Number(item.quantidade) || 0,
+            unidadeMedida: 'UN',
+            valorUnitario: Number(item.preco_unitario) || 0,
+            valorTotal: Number(item.valor_total) || 0,
+          }));
+
+          setItensPedidoDetalhado(itensFormatados);
+        } else {
+          setItensPedidoDetalhado([]);
+          message.warning('Nenhum item encontrado para este pedido');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar itens do pedido:', error);
+        message.error('Erro ao carregar itens do pedido');
+        setItensPedidoDetalhado([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      if (searchParams.numeroPedido) {
+        carregarItensPedido(searchParams.numeroPedido);
+      }
+    }, [searchParams.numeroPedido]);
 
     return (
       <Modal
@@ -756,7 +901,7 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
         }
         open={visible}
         onCancel={onCancel}
-        width={800}
+        width={1000}
         className="sap-pesquisa-modal"
         footer={
           <div className="sap-modal-footer">
@@ -820,6 +965,20 @@ const AtribuirItensPedido: React.FC<AtribuirItensPedidoProps> = ({ chaveAcesso }
               )}
             </div>
           </div>
+
+          {searchParams.numeroPedido && (
+            <div style={{ marginTop: 16 }}>
+              <h3>Itens do Pedido {searchParams.numeroPedido}</h3>
+              <Table
+                columns={colunasItensPedido}
+                dataSource={itensPedidoDetalhado}
+                loading={loading}
+                size="small"
+                pagination={false}
+                scroll={{ y: 300 }}
+              />
+            </div>
+          )}
         </div>
       </Modal>
     );
