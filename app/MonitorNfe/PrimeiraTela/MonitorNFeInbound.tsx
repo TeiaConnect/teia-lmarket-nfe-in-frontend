@@ -5,6 +5,7 @@ import FiltroNFeInbound from './FiltroNFeInbound';
 import TabelaNFeInbound from './TabelaNFeInbound';
 import DetalhesNFeInbound from './DetalhesNFeInbound';
 import AtribuirItensPedido from './AtribuirItensPedido';
+import EntrarContagem from './EntrarContagem';
 import { message, Button, Dropdown, Space, Cascader, Upload, Table, Tabs, Modal } from 'antd';
 import { DownOutlined, FileTextOutlined, FileExcelOutlined, PrinterOutlined, ReloadOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, HistoryOutlined, SettingOutlined, UploadOutlined, PlayCircleTwoTone, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { FaBalanceScale, FaFileCode, FaFileInvoice, FaHistory, FaPlayCircle, FaUpload, FaTrash, FaSync } from 'react-icons/fa';
@@ -118,6 +119,7 @@ export default function MonitorNFeInbound() {
   const [showDetails, setShowDetails] = useState(false);
   const [selectedNFe, setSelectedNFe] = useState<any>(null);
   const [showAtribuirItens, setShowAtribuirItens] = useState(false);
+  const [showContagem, setShowContagem] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const uploadProps = {
@@ -371,6 +373,18 @@ export default function MonitorNFeInbound() {
     });
   };
 
+  const handleEntrarContagem = (chaveAcesso: string) => {
+    if (!chaveAcesso) {
+      message.error('Selecione uma NF-e para entrar contagem');
+      return;
+    }
+    setShowContagem(true);
+  };
+
+  const handleVoltarContagem = () => {
+    setShowContagem(false);
+  };
+
   if (showDetails && selectedNFe) {
     const nfe = selectedNFe?.nfeProc?.NFe?.infNFe;
     const protNFe = selectedNFe?.nfeProc?.protNFe?.infProt;
@@ -442,6 +456,15 @@ export default function MonitorNFeInbound() {
     );
   }
 
+  if (showContagem && selectedRow?.chave_acesso) {
+    return (
+      <EntrarContagem 
+        chaveAcesso={selectedRow.chave_acesso}
+        onVoltar={handleVoltarContagem}
+      />
+    );
+  }
+
   const columns: ColumnsType<DataType> = [
     {
       title: 'Chave de Acesso',
@@ -493,7 +516,15 @@ export default function MonitorNFeInbound() {
           </Button>
           <Button icon={<FaFileCode />} style={buttonStyle} title="Simular XML">Simular XML</Button>
           <Button icon={<FaFileInvoice />} style={buttonStyle} title="Simular Fatura">Simular Fatura</Button>
-          <Button icon={<FaBalanceScale/>} style={buttonStyle} title="Entrar Contagem">Contagem</Button>
+          <Button 
+            icon={<FaBalanceScale/>} 
+            style={buttonStyle} 
+            title="Entrar Contagem"
+            onClick={() => handleEntrarContagem(selectedRow?.chave_acesso || '')}
+            disabled={!selectedRow}
+          >
+            Contagem
+          </Button>
         </div>
 
         <div style={buttonGroupStyle}>
