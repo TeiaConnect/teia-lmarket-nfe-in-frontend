@@ -242,7 +242,7 @@ const SimulacaoFatura: React.FC<SimulacaoFaturaProps> = ({ nfeData, onVoltar }) 
             onSelectItem={setSelectedItemKey}
           />
         </div>
-        {/* Barra de ações das abas */}
+
         <div style={{ background: '#fff', padding: '8px 16px 0 16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <Button type="primary">Gravar Simulação</Button>
         </div>
@@ -364,6 +364,157 @@ const SimulacaoFatura: React.FC<SimulacaoFaturaProps> = ({ nfeData, onVoltar }) 
             </Tabs>
           </div>
         )}
+        {/* Totais consolidados comparativos NF-e x Simulação (MIRO) */}
+        <div style={{ margin: '32px 0 24px 0', width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <div style={{
+            width: '100%',
+            maxWidth: 900,
+            background: '#fff',
+            borderRadius: 16,
+            boxShadow: '0 2px 16px #0001',
+            padding: '28px 32px',
+            textAlign: 'center',
+            border: '1px solid #e6f7ff',
+          }}>
+            <h3 style={{ marginBottom: 24, color: '#1890ff', fontWeight: 700, fontSize: 20 }}>
+              Totais Consolidados - NF-e x Simulação (MIRO)
+            </h3>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, margin: '0 auto' }}>
+              <thead>
+                <tr style={{ background: 'linear-gradient(90deg, #e6f7ff 0%, #fafafa 100%)' }}>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700, borderTopLeftRadius: 8 }}></th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700 }}>NF-e</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700 }}>Simulação (MIRO)</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700, borderTopRightRadius: 8 }}>Divergência</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Total dos Itens */}
+                {(() => {
+                  const totalNfe = itensParaExibir.reduce((acc, item) => acc + Number((item.valorTotal || '0').replace(/\./g, '').replace(',', '.')), 0);
+                  const totalSim = itensParaExibir.reduce((acc, item) => acc + Number((item.simulacao?.valorTotal || '0').replace(/\./g, '').replace(',', '.')), 0);
+                  const divergente = totalNfe !== totalSim;
+                  return (
+                    <tr style={{ background: '#f9fafb' }}>
+                      <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 500 }}>Total dos Itens</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center', color: '#389e0d', fontWeight: 700 }}>R$ {totalNfe.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center', color: '#096dd9', fontWeight: 700 }}>R$ {totalSim.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{divergente && <span style={{ color: '#d4380d', fontWeight: 700 }}>Divergente ⚠️</span>}</td>
+                    </tr>
+                  );
+                })()}
+                {/* Total dos Impostos */}
+                {(() => {
+                  const totalNfe = ['ICMS', 'IPI', 'PIS', 'COFINS'].reduce((acc, imposto) => acc + itensParaExibir.reduce((acc2, item) => acc2 + Number((item.impostos?.[imposto as keyof typeof item.impostos] || '0').replace(/\./g, '').replace(',', '.')), 0), 0);
+                  const totalSim = ['ICMS', 'IPI', 'PIS', 'COFINS'].reduce((acc, imposto) => acc + itensParaExibir.reduce((acc2, item) => {
+                    const simImpostos = (item.simulacao && typeof item.simulacao === 'object' && 'impostos' in item.simulacao && typeof item.simulacao.impostos === 'object') ? item.simulacao.impostos as Record<string, string> : {};
+                    return acc2 + Number((simImpostos[imposto] || '0').replace(/\./g, '').replace(',', '.'));
+                  }, 0), 0);
+                  const divergente = totalNfe !== totalSim;
+                  return (
+                    <tr style={{ background: '#fff' }}>
+                      <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 500 }}>Total dos Impostos</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center', color: '#389e0d', fontWeight: 700 }}>R$ {totalNfe.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center', color: '#096dd9', fontWeight: 700 }}>R$ {totalSim.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{divergente && <span style={{ color: '#d4380d', fontWeight: 700 }}>Divergente ⚠️</span>}</td>
+                    </tr>
+                  );
+                })()}
+                {/* Total das Condições */}
+                {(() => {
+                  const totalNfe = itensParaExibir.reduce((acc, item) => acc + (item.condicoesDetalhadas ? item.condicoesDetalhadas.reduce((acc2: number, cond: any) => {
+                    const base = Number((cond.base || '0').replace(/\./g, '').replace(',', '.'));
+                    const aliquota = Number((cond.aliquota || '0').replace(',', '.'));
+                    return acc2 + (base * aliquota / 100);
+                  }, 0) : 0), 0);
+                  const totalSim = itensParaExibir.reduce((acc, item) => acc + (item.simulacao && item.simulacao.condicoesDetalhadas ? item.simulacao.condicoesDetalhadas.reduce((acc2: number, cond: any) => {
+                    const base = Number((cond.base || '0').replace(/\./g, '').replace(',', '.'));
+                    const aliquota = Number((cond.aliquota || '0').replace(',', '.'));
+                    return acc2 + (base * aliquota / 100);
+                  }, 0) : 0), 0);
+                  const divergente = totalNfe !== totalSim;
+                  return (
+                    <tr style={{ background: '#f9fafb' }}>
+                      <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 500 }}>Total das Condições</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center', color: '#389e0d', fontWeight: 700 }}>R$ {totalNfe.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center', color: '#096dd9', fontWeight: 700 }}>R$ {totalSim.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>{divergente && <span style={{ color: '#d4380d', fontWeight: 700 }}>Divergente ⚠️</span>}</td>
+                    </tr>
+                  );
+                })()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {/* Quadro de Condições Consolidadas */}
+        <div style={{ margin: '0 0 32px 0', width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <div style={{
+            width: '100%',
+            maxWidth: 900,
+            background: '#fff',
+            borderRadius: 16,
+            boxShadow: '0 2px 16px #0001',
+            padding: '28px 32px',
+            textAlign: 'center',
+            border: '1px solid #e6f7ff',
+          }}>
+            <h3 style={{ marginBottom: 24, color: '#d46b08', fontWeight: 700, fontSize: 18 }}>
+              Condições Consolidadas
+            </h3>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, margin: '0 auto' }}>
+              <thead>
+                <tr style={{ background: 'linear-gradient(90deg, #fffbe6 0%, #fafafa 100%)' }}>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700, borderTopLeftRadius: 8 }}>Condição SAP</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700 }}>Imposto</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700 }}>Base de Cálculo Total</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700 }}>Alíquota (%)</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700, borderTopRightRadius: 8 }}>Valor Total do Imposto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  // Agrupar condições de todos os itens
+                  const conds: Record<string, { codigo: string, imposto: string, bases: number[], aliquotas: string[], valor: number }> = {};
+                  itensParaExibir.forEach(item => {
+                    if (item.condicoesDetalhadas) {
+                      item.condicoesDetalhadas.forEach((cond: any) => {
+                        if (!conds[cond.codigo]) {
+                          conds[cond.codigo] = {
+                            codigo: cond.codigo,
+                            imposto: cond.imposto,
+                            bases: [],
+                            aliquotas: [],
+                            valor: 0
+                          };
+                        }
+                        const base = Number((cond.base || '0').replace(/\./g, '').replace(',', '.'));
+                        const aliquota = cond.aliquota || '';
+                        const valor = base * Number((aliquota || '0').replace(',', '.')) / 100;
+                        conds[cond.codigo].bases.push(base);
+                        conds[cond.codigo].aliquotas.push(aliquota);
+                        conds[cond.codigo].valor += valor;
+                      });
+                    }
+                  });
+                  return Object.values(conds).map((cond, idx) => {
+                    // Se todas as alíquotas são iguais, mostrar, senão 'Várias'
+                    const aliquotaUnica = cond.aliquotas.every(a => a === cond.aliquotas[0]) ? cond.aliquotas[0] : 'Várias';
+                    const baseTotal = cond.bases.reduce((a, b) => a + b, 0);
+                    return (
+                      <tr key={cond.codigo} style={{ background: idx % 2 === 0 ? '#fffbe6' : '#fff' }}>
+                        <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>{cond.codigo}</td>
+                        <td style={{ padding: '10px 8px', textAlign: 'center' }}>{cond.imposto}</td>
+                        <td style={{ padding: '10px 8px', textAlign: 'center' }}>{baseTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td style={{ padding: '10px 8px', textAlign: 'center' }}>{aliquotaUnica}</td>
+                        <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 700, color: '#d46b08' }}>{cond.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      </tr>
+                    );
+                  });
+                })()}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );
