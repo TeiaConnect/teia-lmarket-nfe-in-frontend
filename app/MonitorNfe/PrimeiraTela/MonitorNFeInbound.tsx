@@ -18,6 +18,7 @@ import TabIdentificacaoNFe from '../SegundaTela/TabIdentificacaoNFe/TabIdentific
 import Emissor from '../SegundaTela/TabEmissor/Emissor';
 import type { ColumnsType } from 'antd/es/table';
 import type { TabsProps } from 'antd';
+import SimulacaoFatura from './SimulacaoFatura';
 
 const options = [
   {
@@ -121,6 +122,7 @@ export default function MonitorNFeInbound() {
   const [showAtribuirItens, setShowAtribuirItens] = useState(false);
   const [showContagem, setShowContagem] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showSimulacaoFatura, setShowSimulacaoFatura] = useState(false);
 
   const uploadProps = {
     name: 'file',
@@ -385,6 +387,36 @@ export default function MonitorNFeInbound() {
     setShowContagem(false);
   };
 
+  // Exemplo de dados fictícios para teste
+  const nfeSimulacaoData = {
+    emitente: { nome: 'ATTA INDUSTRIAL LTDA' },
+    destinatario: { nome: 'USAFLEX - INDUSTRIA & COMERCIO S/A' },
+    valorTotal: '30.861,72',
+    mensagens: [
+      'Existem mensagens no nível de item',
+      'Preço abaixo do limite: limite tolerância de 10,00 % não será atingido',
+      'Elem.NF-e 000010: valor produto 3.429,08 em NF-e diverge de valor calculado 3.840,57'
+    ],
+    itens: [
+      {
+        numeroItem: 1,
+        categoria: 'Item principal',
+        numeroPedido: '4501215661',
+        itemPedido: 130,
+        quantidade: 167,
+        unidade: 'PAR',
+        codigoMaterial: '00000001016731001',
+        descricao: 'CHINELO AL4401 EVA AZUL CEU',
+        cfop: '2101AA',
+        codImposto: 'I5',
+        valores: { cfop: '6101', descricao: 'CHINELO EVA AT608 POOFY 6 AL4401 AZUL CEU - 34', quantidade: 167, valorTotal: 3429.08 },
+        impostos: { ICMS: 411.49, IPI: 0, PIS: 56.58, COFINS: 260.61 },
+        condicoesImposto: { ICMS: 'A', IPI: 'A', PIS: 'A', COFINS: 'A' }
+      },
+      // ... outros itens ...
+    ]
+  };
+
   if (showDetails && selectedNFe) {
     const nfe = selectedNFe?.nfeProc?.NFe?.infNFe;
     const protNFe = selectedNFe?.nfeProc?.protNFe?.infProt;
@@ -465,6 +497,12 @@ export default function MonitorNFeInbound() {
     );
   }
 
+  if (showSimulacaoFatura) {
+    return (
+      <SimulacaoFatura nfeData={nfeSimulacaoData} onVoltar={() => setShowSimulacaoFatura(false)} />
+    );
+  }
+
   const columns: ColumnsType<DataType> = [
     {
       title: 'Chave de Acesso',
@@ -515,7 +553,7 @@ export default function MonitorNFeInbound() {
             Atribuir itens do pedido
           </Button>
           <Button icon={<FaFileCode />} style={buttonStyle} title="Simular XML">Simular XML</Button>
-          <Button icon={<FaFileInvoice />} style={buttonStyle} title="Simular Fatura">Simular Fatura</Button>
+          <Button icon={<FaFileInvoice />} style={buttonStyle} title="Simular Fatura" onClick={() => setShowSimulacaoFatura(true)}>Simular Fatura</Button>
           <Button 
             icon={<FaBalanceScale/>} 
             style={buttonStyle} 

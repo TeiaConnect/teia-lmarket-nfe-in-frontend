@@ -53,8 +53,8 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
             allowClear
           />
         </Form.Item>
-        <Form.Item name="codigoTipoEvento" label="Tipo de evento:" style={{ marginBottom: 3 }}>
-          <Select
+        {/* <Form.Item name="codigoTipoEvento" label="Tipo de evento:" style={{ marginBottom: 3 }}>
+          {/* <Select
             mode="tags"
             style={{ fontSize: '12px', width: '10vh' }}
             dropdownStyle={{ width: 'auto', minWidth: '50vh' }}
@@ -85,8 +85,8 @@ const FiltroNFeInbound: React.FC<FiltroNFeInboundProps> = ({ onButtonClick }) =>
               { value: '990910', label: '990910 - Confirmacao de internacionalizacao de mercadoria na SUFRAMA' }
             ]}
             allowClear
-          />
-        </Form.Item>
+          /> *</Form.Item> */}
+
         <Form.Item name="tipoDocumento" label="Tipo de Documento:" style={{ marginBottom: 3 }}>
           <Select
             mode="tags"

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button, Table, Space, message, Select } from 'antd';
+import { Button, Table, Space, message, Select, Input } from 'antd';
 import { FaCheck, FaArrowLeft, FaQuestionCircle } from 'react-icons/fa';
 import type { ColumnsType } from 'antd/es/table';
 import './EntrarContagem.css';
@@ -28,7 +28,18 @@ interface ItemContagem {
 
 const EntrarContagem: React.FC<EntrarContagemProps> = ({ chaveAcesso, onVoltar }) => {
   const [loading, setLoading] = useState(false);
-  const [visaoSelecionada, setVisaoSelecionada] = useState('standard');
+  const [tipoContagem, setTipoContagem] = useState<'comum' | 'cega'>('comum');
+  const [quantidadesRecebidas, setQuantidadesRecebidas] = useState<{[key: string]: number}>({});
+
+  const handleQuantidadeChange = (value: string, record: ItemContagem) => {
+    const numero = parseFloat(value);
+    if (!isNaN(numero)) {
+      setQuantidadesRecebidas(prev => ({
+        ...prev,
+        [record.key]: numero
+      }));
+    }
+  };
 
   const columns: ColumnsType<ItemContagem> = [
     {
@@ -79,6 +90,9 @@ const EntrarContagem: React.FC<EntrarContagemProps> = ({ chaveAcesso, onVoltar }
       dataIndex: 'quantidade_nfe',
       key: 'quantidade_nfe',
       width: 120,
+      render: (value: number, record: ItemContagem) => (
+        tipoContagem === 'comum' ? value : '***'
+      ),
     },
     {
       title: 'Unidade de medida',
@@ -91,6 +105,15 @@ const EntrarContagem: React.FC<EntrarContagemProps> = ({ chaveAcesso, onVoltar }
       dataIndex: 'quantidade_recebida',
       key: 'quantidade_recebida',
       width: 120,
+      render: (_: any, record: ItemContagem) => (
+        <Input
+          type="number"
+          size="small"
+          style={{ width: '100%' }}
+          value={quantidadesRecebidas[record.key] || ''}
+          onChange={(e) => handleQuantidadeChange(e.target.value, record)}
+        />
+      ),
     },
     {
       title: 'Unidade de medida',
@@ -231,11 +254,12 @@ const EntrarContagem: React.FC<EntrarContagemProps> = ({ chaveAcesso, onVoltar }
         <Space>
           <span>Visão:</span>
           <Select
-            value={visaoSelecionada}
-            onChange={setVisaoSelecionada}
+            value={tipoContagem}
+            onChange={setTipoContagem}
             style={{ width: 200 }}
             options={[
-              { value: 'standard', label: 'Visão standard' },
+              { value: 'comum', label: 'Contagem Comum' },
+              { value: 'cega', label: 'Contagem Cega' },
             ]}
           />
         </Space>
@@ -253,6 +277,7 @@ const EntrarContagem: React.FC<EntrarContagemProps> = ({ chaveAcesso, onVoltar }
           size="small"
           scroll={{ x: 'max-content', y: 'calc(100vh - 300px)' }}
           pagination={false}
+          className="atribuir-itens-table"
         />
       </div>
     </div>
